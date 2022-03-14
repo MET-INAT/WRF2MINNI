@@ -2,9 +2,9 @@
 SHELL	:= /bin/bash
 
 FC      := ifort
-FFLAGS  :=  -I/gfra_user/store_0/usr/forair/LIB_INTEL/include
-FFLAGS  += -openmp -free
-LDFLAGS = -L/gfra_user/store_0/usr/forair/LIB_INTEL/lib
+FFLAGS  :=  -I/gfrai1/store_0/usr/forair/LIB_INTEL/include
+FFLAGS  += -qopenmp -free
+LDFLAGS = -L/gfrai1/store_0/usr/forair/LIB_INTEL/lib
 
 
   FFLAGS      += 
@@ -32,4 +32,4 @@ $(DEPEND): $(SRC)
 	makedepf90 -o $(EXEC) -r '$(FC) -c -o $$@ $(FFLAGS) $$<' $^ > $(DEPEND)
 
 clean:
-	$(RM) $(DEPEND) $(FOBJ) core src/*.mod  wrf2farm.x
+	$(RM) $(DEPEND) $(FOBJ) core src/*.mod  *.mod wrf2farm.x
