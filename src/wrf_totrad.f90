@@ -9,7 +9,8 @@
 !$OMP PRIVATE(i,j)
        do j=1,south_north
        do i=1,west_east
-       TRAD(i,j)=SWDOWN(i,j)+GLW(i,j)
+!       TRAD(i,j)=SWDOWN(i,j)+GLW(i,j)
+       TRAD(i,j)=SWDOWN(i,j)
        enddo
        enddo
 !$OMP END PARALLEL DO
