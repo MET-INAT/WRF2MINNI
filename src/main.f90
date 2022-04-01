@@ -120,6 +120,8 @@ allocate(XLAT(west_east, south_north),               &
          GRAUPELNC(west_east,south_north),   &
          SST(west_east,south_north),   &
          SSTSK(west_east,south_north),   &
+         TSK(west_east,south_north),   &
+         EMISS(west_east,south_north),   &
          HGT(west_east,south_north),   &
          COSALPHA(west_east,south_north),   &
          SINALPHA(west_east,south_north),   &

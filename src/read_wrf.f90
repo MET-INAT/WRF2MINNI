@@ -16,6 +16,7 @@
       integer :: idGRAUPELNC,idHAILNC,idSNOWNC
       integer :: idSST,idSNOWH,idZNT
       integer :: idSSTSK
+      integer :: idTSK, idEMISS
       integer :: idalbedo,idust
       integer :: idgrdflx,idhfx,idlh,idswdown,idglw
       integer :: idHGT,idT2,idU10,idV10,idPSFC,idPBLH
@@ -207,38 +208,49 @@
            count = (/ west_east, south_north, 1 /) ))
       endif
       if ( ( fnrad .eqv. .true. ) .or. ( fgh .eqv. .true. ) ) then
-      call check(nf90_inq_varid(ncid,'GRDFLX',idgrdflx))
-      call check(nf90_get_var(ncid,idgrdflx,GRDFLX,                     &
+        call check(nf90_inq_varid(ncid,'GRDFLX',idgrdflx))
+        call check(nf90_get_var(ncid,idgrdflx,GRDFLX,                     &
            start = (/ 1, 1, timestep /),                                &
            count = (/ west_east, south_north, 1 /) ))
       endif
       if ( ( fnrad .eqv. .true. ) .or. ( fsh .eqv. .true. ) ) then
-      call check(nf90_inq_varid(ncid,'HFX',idhfx))
-      call check(nf90_get_var(ncid,idhfx,HFX,                           &
+        call check(nf90_inq_varid(ncid,'HFX',idhfx))
+        call check(nf90_get_var(ncid,idhfx,HFX,                           &
            start = (/ 1, 1, timestep /),                                &
            count = (/ west_east, south_north, 1 /) ))
       endif
       if ( ( fnrad .eqv. .true. ) .or. ( flh .eqv. .true. ) ) then
-      call check(nf90_inq_varid(ncid,'LH',idlh))
-      call check(nf90_get_var(ncid,idlh,LH,                             &
+        call check(nf90_inq_varid(ncid,'LH',idlh))
+        call check(nf90_get_var(ncid,idlh,LH,                             &
+           start = (/ 1, 1, timestep /),                                &
+           count = (/ west_east, south_north, 1 /) ))
+      endif
+
+      if ( fnrad .eqv. .true. ) then
+        call check(nf90_inq_varid(ncid,'TSK',idTSK))
+        call check(nf90_get_var(ncid,idTSK,TSK,                       &
+           start = (/ 1, 1, timestep /),                                &
+           count = (/ west_east, south_north, 1 /) ))
+        call check(nf90_inq_varid(ncid,'EMISS',idEMISS))
+        call check(nf90_get_var(ncid,idEMISS,EMISS,                       &
            start = (/ 1, 1, timestep /),                                &
            count = (/ west_east, south_north, 1 /) ))
       endif
       if ( ( ftgrad .eqv. .true. ) .or. ( flgrad .eqv. .true. ) ) then
-      call check(nf90_inq_varid(ncid,'GLW',idglw))
-      call check(nf90_get_var(ncid,idglw,GLW,                           &
+        call check(nf90_inq_varid(ncid,'GLW',idglw))
+        call check(nf90_get_var(ncid,idglw,GLW,                           &
            start = (/ 1, 1, timestep /),                                &
            count = (/ west_east, south_north, 1 /) ))
       endif
       if ( ( ftgrad .eqv. .true. ) .or. ( fsgrad .eqv. .true. ) ) then
-      call check(nf90_inq_varid(ncid,'SWDOWN',idswdown))
-      call check(nf90_get_var(ncid,idswdown,SWDOWN,                     &
+        call check(nf90_inq_varid(ncid,'SWDOWN',idswdown))
+        call check(nf90_get_var(ncid,idswdown,SWDOWN,                     &
            start = (/ 1, 1, timestep /),                                &
            count = (/ west_east, south_north, 1 /) ))
       endif
       if ( fustar .eqv. .true. )  then
-      call check(nf90_inq_varid(ncid,'UST',idust))
-      call check(nf90_get_var(ncid,idust,UST,                     &
+        call check(nf90_inq_varid(ncid,'UST',idust))
+        call check(nf90_get_var(ncid,idust,UST,                     &
            start = (/ 1, 1, timestep /),                                &
            count = (/ west_east, south_north, 1 /) ))
       endif

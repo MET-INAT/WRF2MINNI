@@ -35,6 +35,8 @@
       real, allocatable,dimension(:,:) :: GRAUPELNC
       real, allocatable,dimension(:,:) :: SST
       real, allocatable,dimension(:,:) :: SSTSK
+      real, allocatable,dimension(:,:) :: TSK
+      real, allocatable,dimension(:,:) :: EMISS
       real, allocatable,dimension(:,:) :: HGT
       real, allocatable,dimension(:,:) :: COSALPHA
       real, allocatable,dimension(:,:) :: SINALPHA
