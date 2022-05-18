@@ -8,6 +8,13 @@
 !input SNOWNC non convective snow                 mm
 !output totprec  totalprec                        mm 
 
+
+!Massimo:
+! per calcolare la precipitazione non occorrono le idrometeore
+! da quanto ho capito nei vari forum di wrf, il totale e' in RAINC e
+! RAINNC (al limite RAINSH che pero' e' in output solo
+! se si attiva una particolare parametrizz della convez)
+
        use param_wrf
 
        IMPLICIT NONE
@@ -16,12 +23,14 @@
 !$OMP PARALLEL DO            &
 !$OMP  COLLAPSE(2)           &
 !$OMP DEFAULT(NONE)          &
-!$OMP SHARED(totprec,RAINC,RAINNC,RAINSH,SNOWNC,GRAUPELNC,HAILNC,south_north,west_east) &
+!$OMP SHARED(totprec,RAINC,RAINNC,RAINSH,south_north,west_east) &
 !$OMP PRIVATE(i,j)
+!!!!$OMP SHARED(totprec,RAINC,RAINNC,RAINSH,SNOWNC,GRAUPELNC,HAILNC,south_north,west_east) &
        do j=1,south_north
        do i=1,west_east
-       totprec(i,j) = RAINC(i,j)+RAINNC(i,j)+RAINSH(i,j)+               &
-     &           SNOWNC(i,j)+GRAUPELNC(i,j)+HAILNC(i,j)
+       totprec(i,j) = RAINC(i,j)+RAINNC(i,j)+RAINSH(i,j)
+       !totprec(i,j) = RAINC(i,j)+RAINNC(i,j)+RAINSH(i,j)+               &
+     & !          SNOWNC(i,j)+GRAUPELNC(i,j)+HAILNC(i,j)
        enddo
        enddo
 !$OMP END PARALLEL DO
