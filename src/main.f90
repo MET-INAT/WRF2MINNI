@@ -199,6 +199,11 @@ allocate(XLAT(west_east, south_north),               &
       if (( rotate .eqv. .true. ) .and. ( utmcoordinate .eqv. .false. )) then
             call rotate_wind
       endif
+! Massimo: vd commento successivo
+      if ( ( rotate .eqv. .true. ) .and. ( utmcoordinate .eqv. .true. )) then
+         call rotate_wind
+      endif
+! Massimo: vd commento successivo
       if ( fnrad .eqv. .true. ) then
          call wrf_netrad
       endif
@@ -209,9 +214,13 @@ allocate(XLAT(west_east, south_north),               &
          call wrf2farm_int
 !OMP BARRIER         
 !$OMP SINGLE
-         if ( ( rotate .eqv. .true. ) .and. ( utmcoordinate .eqv. .true. )) then
-            call rotate_wind_gap
-         endif
+! 31 may 2022 Massimo: la rotate_wind_gap è concettualmente sbagliata secondo me
+! e Gino. UTM conserva gli angoli, quindi va fatta la rotazione classica delle
+! coordinate WRF alle coorfinate terrestri, chiamando rotate_wind, PRIMA
+! dell'interpolazione orizzontale
+         !if ( ( rotate .eqv. .true. ) .and. ( utmcoordinate .eqv. .true. )) then
+            !call rotate_wind_gap
+         !endif
          call wr_farm
 !$OMP END SINGLE
       enddo !numtimestep
