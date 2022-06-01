@@ -40,8 +40,8 @@
       read(cday,'(I2)'),day
       read(chr,'(I2)'),hr
      farmtime=minni_date(yr,mon,day,hr)
-     !fileout=trim(dirout)//trim(fileou)//"meteo_wrf_"//Times//".nc"
-     fileout=trim(dirout)//trim(fileou)//Times//".nc"
+     fileout=trim(dirout)//trim(fileou)//"meteo_wrf_"//Times//".nc"
+     !fileout=trim(dirout)//trim(fileou)//Times//".nc"
       call check(nf90_create(trim(fileout),nf90_clobber, ncid))
 !Define dimensions
       call check(nf90_def_dim(ncid,"x",nx,idx))
