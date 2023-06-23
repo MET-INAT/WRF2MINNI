@@ -1,6 +1,9 @@
       module general
+      use datetime_module, only : timedelta, datetime
       IMPLICIT NONE
       SAVE
+      type (datetime) :: current_date, old_date
+      type (timedelta) :: deltat
 
       integer, parameter :: max_num_levs=100
       character(len=252) :: dirin ,dirout,Time_startsim,filein,fileou

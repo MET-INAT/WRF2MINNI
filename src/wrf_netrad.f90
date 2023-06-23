@@ -14,12 +14,12 @@
 !$OMP PARALLEL DO            &
 !$OMP  COLLAPSE(2)           &
 !$OMP DEFAULT(NONE)          &
-!$OMP SHARED(NRAD,GLW,ALBEDO,SWDOWN,TSK,EMISS,south_north,west_east) &
+!$OMP SHARED(T2,NRAD,GLW,ALBEDO,SWDOWN,TSK,EMISS,south_north,west_east) &
 !$OMP PRIVATE(i,j,LWUP)
        do j=1,south_north
        do i=1,west_east
-!        NRAD(i,j)=HFX(i,j)+LH(i,j)+GRDFLX(i,j)
-        LWUP=EMISS(i,j)*5.67E-8*TSK(i,j)**4
+        !LWUP=EMISS(i,j)*5.67E-8*TSK(i,j)**4
+        LWUP=EMISS(i,j)*5.67E-8*T2(i,j)**4
         NRAD(i,j)=SWDOWN(i,j)*(1.-ALBEDO(i,j))+GLW(i,j)-LWUP
        enddo
        enddo

@@ -10,6 +10,7 @@
 
       integer      :: ncid,idTime, idtmp
       integer      :: fnum,nfile,timestep,numtimestep
+      integer      :: year, month, day, hour
       character    :: cdummy
       character*256 :: filenl
 
@@ -116,8 +117,8 @@ allocate(XLAT(west_east, south_north),               &
          RAINNC(west_east,south_north),   &
          RAINSH(west_east,south_north),   &
          SNOWNC(west_east,south_north),   &
-         HAILNC(west_east,south_north),   &
-         GRAUPELNC(west_east,south_north),   &
+         !HAILNC(west_east,south_north),   &
+         !GRAUPELNC(west_east,south_north),   &
          SST(west_east,south_north),   &
          SSTSK(west_east,south_north),   &
          TSK(west_east,south_north),   &
@@ -169,45 +170,68 @@ allocate(XLAT(west_east, south_north),               &
 !read wrf data
 !$OMP SINGLE
          call read_wrf(timestep)
+! set date
+read(Times(1:4),'(I4)'),year
+read(Times(6:7),'(I2)'),month
+read(Times(9:10),'(I2)'),day
+read(Times(12:13),'(I2)'),hour
+current_date = datetime(year, month, day, hour)
 !$OMP END SINGLE
 !convert wrf lat lon grid to utm
+print*,'debug: call convert lonlat to UTM if utmcoordinate .eqv. .true.'
          call grid_latlon2utm
 !compute in situ temperature
+print*,'debug: call compute T '
          call wrf_t
 !compute pressure
+print*,'debug: call compute press '
          call wrf_press
 !compute geopotential
+print*,'debug: call compute phi '
          call wrf_geop
 !compute geopotential height
+print*,'debug: call compute Z '
          call wrf_geohgt
 !compute relative humidity
+print*,'debug: call compute rh '
          call wrf_rh
 !compute total cloud cover
+print*,'debug: call compute tcc '
          call wrf_tcc
 !compute total precipitation
+print*,'debug: call compute prec '
          call wrf_prec
+print*,'debug: call compute prec flux'
          call wrf_precflux(timestep)
 !compute level hight above sea level
+print*,'debug: call compute hgt asl'
          call wrf_hgt_abovesl
 !compute level hight above ground
+print*,'debug: call compute hgt above ground'
          call wrf_aboveground(zwrf_asl,zwrf_agd,bottom_top)
 !compute geopotential hight above ground
+print*,'debug: call compute phi'
          call wrf_aboveground(geohgt_asl,geohgt_agd,bottom_top_stag)
 !Horizontal Interpolation from staggered to central grid 
+print*,'debug: call center_wind'
          call center_wind
 !Rotate wind         
       if (( rotate .eqv. .true. ) .and. ( utmcoordinate .eqv. .false. )) then
+print*,'debug: call rotate wind'
             call rotate_wind
       endif
 ! Massimo: vd commento successivo
       if ( ( rotate .eqv. .true. ) .and. ( utmcoordinate .eqv. .true. )) then
+print*,'debug: call rotate wind'
          call rotate_wind
       endif
 ! Massimo: vd commento successivo
       if ( fnrad .eqv. .true. ) then
+print*,'debug: call fnrad'
          call wrf_netrad
       endif
       if ( ftgrad .eqv. .true. ) then
+print*,'debug: call ftrad'
          call wrf_totrad
       endif
 !Horizontal Interpolation from wrf to minni
@@ -221,7 +245,7 @@ allocate(XLAT(west_east, south_north),               &
          !if ( ( rotate .eqv. .true. ) .and. ( utmcoordinate .eqv. .true. )) then
             !call rotate_wind_gap
          !endif
-         call wr_farm
+!         call wr_farm
 !$OMP END SINGLE
       enddo !numtimestep
       end program main

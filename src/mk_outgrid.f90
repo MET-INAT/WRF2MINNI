@@ -6,6 +6,7 @@
       integer :: i
 
 
+! builds a regular grid
 !$OMP SINGLE
       xfarm(1,:)=xstart
       yfarm(:,1)=ystart

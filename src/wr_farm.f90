@@ -41,6 +41,7 @@
       read(chr,'(I2)'),hr
      farmtime=minni_date(yr,mon,day,hr)
      !fileout=trim(dirout)//trim(fileou)//"meteo_wrf_"//Times//".nc"
+print*,'debug: sto scrivendo, apro file output'
      fileout=trim(dirout)//trim(fileou)//Times//".nc"
       call check(nf90_create(trim(fileout),nf90_clobber, ncid))
 !Define dimensions

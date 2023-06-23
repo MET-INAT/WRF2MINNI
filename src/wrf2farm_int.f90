@@ -482,6 +482,9 @@
        enddo
 !$OMP END PARALLEL DO
 !$OMP BARRIER
+
+!massimo
+ goto 111
 !Vertical intepolaton of insitu T taking into account T2m
          call wrf_interp_3d_z(nx,ny,bottom_top_stag,dummy3,dummy4,      &
      &                        nz,zlev,tfarm)
@@ -620,6 +623,8 @@
 !$OMP END PARALLEL DO
 !$OMP BARRIER
        endif
+!massimo
+111 continue
 !-------------MERIDIONAL VELOCITY---------------------------------------------------
       if ( use_W10 ) then
 !$OMP PARALLEL DO            &
@@ -669,6 +674,7 @@
 !$OMP DEFAULT(NONE)          &
 !$OMP SHARED(vfarm,nx,ny,nz) &
 !$OMP PRIVATE(i,j,k)
+!massimo debug
        do k=1,nz
        do j=1,ny
        do i=1,nx
@@ -721,6 +727,11 @@
 !Vertical intepolaton of meridional velocity taking into account  V10m
          call wrf_interp_3d_z(nx,ny,bottom_top_stag,dummy3,dummy4,      &
      &                        nz,zlev,vfarm)
+!massimo devub
+!print*,'utilizzato per vinterp bottom_top_stag ',bottom_top_stag
+!do k=1,nz
+!write(*,fmt='(a6,3x,f9.2,3x,i2)')'vfarm ',vfarm(77,142,k),k
+!enddo
        else
 !$OMP BARRIER
          call wrf_interp_3d_z(nx,ny,bottom_top,dummy1,zwrf_agdint,      &
@@ -737,7 +748,15 @@
        enddo
 !$OMP END PARALLEL DO
 !$OMP BARRIER
+
+!massimo devub
+!print*,'utilizzato per vinterp bottom_top ',bottom_top
+!do k=1,nz
+!write(*,fmt='(a6,3x,f9.2,3x,i2)')'vfarm ',vfarm(77,142,k),k
+!enddo
        endif
+!stop
+return
 !-------------RELATIVE HUMIDITY---------------------------------------------------
 !$OMP PARALLEL DO            &
 !$OMP  COLLAPSE(3)           &
