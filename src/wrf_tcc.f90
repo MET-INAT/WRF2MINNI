@@ -13,6 +13,11 @@
        real    :: clfr_mi(west_east,south_north)
        real    :: clfr_hi(west_east,south_north)
        real    :: pp
+
+#ifdef debug
+  print*,'debug: call compute tcc '
+#endif
+
        
 !$OMP PARALLEL DO            &
 !$OMP  COLLAPSE(2)           &

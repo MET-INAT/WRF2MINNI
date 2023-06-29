@@ -7,6 +7,11 @@
        real    :: asl(west_east,south_north,nk)
        real    :: agr(west_east,south_north,nk)
         
+
+#ifdef debug
+  print*,'debug: call wrf_aboveground'
+#endif
+
 !$OMP PARALLEL DO            &
 !$OMP  COLLAPSE(3)           &
 !$OMP DEFAULT(NONE)          &

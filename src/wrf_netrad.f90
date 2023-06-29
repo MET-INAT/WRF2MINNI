@@ -11,6 +11,11 @@
         implicit none
         integer :: i,j
         integer :: LWUP
+
+#ifdef debug
+    print*,'debug: wrf_netrad '
+#endif
+
 !$OMP PARALLEL DO            &
 !$OMP  COLLAPSE(2)           &
 !$OMP DEFAULT(NONE)          &
@@ -18,6 +23,7 @@
 !$OMP PRIVATE(i,j,LWUP)
        do j=1,south_north
        do i=1,west_east
+        !suggerito da mario usare T2 invece che tsk
         !LWUP=EMISS(i,j)*5.67E-8*TSK(i,j)**4
         LWUP=EMISS(i,j)*5.67E-8*T2(i,j)**4
         NRAD(i,j)=SWDOWN(i,j)*(1.-ALBEDO(i,j))+GLW(i,j)-LWUP

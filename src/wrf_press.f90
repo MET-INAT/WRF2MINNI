@@ -9,6 +9,11 @@
        IMPLICIT NONE
        integer :: i,j,k
 
+#ifdef debug
+  print*,'debug: call compute P  wrf_press.f90'
+#endif
+
+
 !$OMP PARALLEL DO            &
 !$OMP  COLLAPSE(3)           &
 !$OMP DEFAULT(NONE)          &

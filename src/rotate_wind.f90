@@ -5,6 +5,11 @@
       real :: tmp
       integer :: k,i,j
 
+#ifdef debug
+    print*,'debug: call rotate wind'
+#endif
+
+
 !$OMP PARALLEL DO                         &
 !$OMP  COLLAPSE(3)                        &
 !$OMP DEFAULT(NONE)                       &

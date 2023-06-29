@@ -4,6 +4,11 @@
         integer :: i,j,k
         
 
+#ifdef debug
+  print*,'debug: call center_wind'
+#endif
+
+
 !$OMP PARALLEL DO            &
 !$OMP  COLLAPSE(3)           &
 !$OMP DEFAULT(NONE)          &

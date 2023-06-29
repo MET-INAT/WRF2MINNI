@@ -3,6 +3,11 @@
        implicit none
        integer :: i,j,k
 
+#ifdef debug
+  print*,'debug: call compute Z '
+#endif
+
+
 !$OMP PARALLEL DO            &
 !$OMP  COLLAPSE(3)           &
 !$OMP DEFAULT(NONE)          &

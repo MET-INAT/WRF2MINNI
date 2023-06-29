@@ -18,6 +18,10 @@
        SVPT0=273.15
        EP_3=0.622
      
+#ifdef debug
+  print*,'debug: call compute rh '
+#endif
+
 !$OMP PARALLEL DO                                        &
 !$OMP  COLLAPSE(3)                                       &
 !$OMP DEFAULT(NONE)                                      &
@@ -37,4 +41,5 @@
 !$OMP END PARALLEL DO
 !$OMP BARRIER
 
+!print*,'sss ',rh(10,10,bottom_top)
        end subroutine

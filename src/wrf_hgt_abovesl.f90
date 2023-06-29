@@ -4,6 +4,10 @@
       
        implicit none
        integer :: k,i,j
+
+#ifdef debug
+  print*,'debug: call compute hgt asl'
+#endif
         
 !$OMP PARALLEL DO            &
 !$OMP  COLLAPSE(3)           &

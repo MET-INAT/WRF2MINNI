@@ -3,7 +3,9 @@
 !----- user must change ----------- BEGIN -------------------------
       integer, parameter :: DateStrLen=19
       character(len=DateStrLen)    :: Times
-      !character(len=DatestrLen)  ::  Time_startsim 
+      real :: bucket_threshold_mm=0.
+      integer :: bucket_count=0
+
 
       integer :: west_east 
       integer :: south_north
@@ -12,6 +14,7 @@
       integer :: soil_layers_stag
       integer :: west_east_stag 
       integer :: south_north_stag
+      real, allocatable,dimension(:) :: XTIME
       real, allocatable,dimension(:,:) :: XLAT
       real, allocatable,dimension(:,:) :: XLONG
       real, allocatable,dimension(:,:) :: XLAT_U
@@ -29,6 +32,8 @@
       real, allocatable,dimension(:,:,:) :: QVAPOR
       real, allocatable,dimension(:,:) :: RAINC
       real, allocatable,dimension(:,:) :: RAINNC
+      integer, allocatable,dimension(:,:) :: I_RAINC
+      integer, allocatable,dimension(:,:) :: I_RAINNC
       real, allocatable,dimension(:,:) :: RAINSH
       real, allocatable,dimension(:,:) :: SNOWNC
       real, allocatable,dimension(:,:) :: HAILNC

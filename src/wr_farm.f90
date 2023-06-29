@@ -1,4 +1,4 @@
-       subroutine wr_farm
+       subroutine wr_farm(fileout)
  
        use general
        use param_minni
@@ -6,6 +6,9 @@
        use netcdf
 
        implicit none
+    
+       type (datetime) :: datetime_farm, nc_ref_time
+       type (timedelta) :: hours_since
 
        integer :: ncid
        integer :: idx,idy,idz,idtime
@@ -17,7 +20,7 @@
        integer :: idqcloud,idqice,idqrain,idqsnow,idqgraup
        integer :: idsh,idlh,idgh,idz0
        integer :: idalbedo,idustar,idlstar
-       integer :: yr,mon,day,hr,farmtime,minni_date
+       integer :: yr,mon,day,hr,farmtime
        integer,dimension(8) :: values
        character*4 :: cyr
        character*2 :: cmon
@@ -26,30 +29,44 @@
        character*2 :: cmin
        character*2 :: csec
        character*3 :: cmillisec
-       character*500 ::  fileout
+       character(len=*) ::  fileout
 
 !----------------------------------------------------------------------
 !$OMP SINGLE
 ! Open the model output file
-      cyr=Times(1:4)
-      cmon=Times(6:7)
-      cday=Times(9:10)
-      chr=Times(12:13)
-      read(cyr,'(I4)'),yr
-      read(cmon,'(I2)'),mon
-      read(cday,'(I2)'),day
-      read(chr,'(I2)'),hr
-     farmtime=minni_date(yr,mon,day,hr)
-print*,'debug: sto scrivendo, apro file output'
-     fileout=trim(dirout)//trim(fileou)//"meteo_wrf_"//Times//".nc"
-     !fileout=trim(dirout)//trim(fileou)//Times//".nc"
+
+      yr=current_date%getYear()
+      mon=current_date%getMonth()
+      day=current_date%getDay()
+      hr=current_date%getHour()
+      write(cyr,'(I4)'),yr
+      write(cmon,'(I2)'),mon
+      write(cday,'(I2)'),day
+      write(chr,'(I2)'),hr
+
+      hours_since=timedelta()
+
+      datetime_farm=datetime(yr,mon,day,hr)
+      nc_ref_time=datetime(1900,01,01,00)
+      hours_since=datetime_farm-nc_ref_time 
+      farmtime=hours_since%total_seconds()/3600.
+#ifdef debug
+print*,'debug: farmtime ',farmtime
+#endif
+
       call check(nf90_create(trim(fileout),nf90_clobber, ncid))
 !Define dimensions
+#ifdef debug
+print*,'debug: define dimensions '
+#endif
       call check(nf90_def_dim(ncid,"x",nx,idx))
       call check(nf90_def_dim(ncid,"y",ny,idy))
       call check(nf90_def_dim(ncid,"z",nz,idz))
       call check(nf90_def_dim(ncid,"time",nf90_unlimited,idtime))
 !Define variables
+#ifdef debug
+print*,'debug: define vars '
+#endif
       call check(nf90_def_var(ncid,"x",nf90_float,                      &
      &  (/ idx  /),idxvar))
       call check(nf90_def_var(ncid,"y",nf90_float,                      &
@@ -101,6 +118,9 @@ print*,'debug: sto scrivendo, apro file output'
      &  (/ idx, idy, idtime /),idtotrad))
        endif
        if ( fsgrad .eqv. .true. ) then
+! TOTRAD è definito swdown in wrf2farm_int.f90
+! ed e' quello che sembra si aspetti surfpro come TOTRAD (non al somma sw+lw)
+! almeno il pytohn di sandro lo definisce "Total SOLAR radiazion" quindi SW
       call check(nf90_def_var(ncid,"TOTRAD",nf90_float,                 &
      &  (/ idx, idy, idtime /),idstotrad))
        endif
@@ -148,6 +168,9 @@ print*,'debug: sto scrivendo, apro file output'
      &  (/ idx, idy, idz, idtime /),idqgraup))
       endif
 
+#ifdef debug
+print*,'debug: define var atrributes '
+#endif
 
        if ( flstar .eqv. .true. ) then
       call check(nf90_put_att(ncid,idlstar,"units","m")) 
@@ -216,7 +239,7 @@ print*,'debug: sto scrivendo, apro file output'
       endif
       call check(nf90_put_att(ncid,idz,"units","m")) 
       call check(nf90_put_att(ncid,idtime,"units",                      &
-     &                        "hours since 1-1-1 00:00:0.0")) 
+     &                        "hours since 1900-1-1 00:00:0.0")) 
       call check(nf90_put_att(ncid,idtime,"delta_t",                    &
      &                        "0000-00-00 01:00:00.00 +00:00")) 
 
@@ -239,15 +262,21 @@ print*,'debug: sto scrivendo, apro file output'
       call check(nf90_put_att(ncid,idsnow,"missing_value",real(-9.96921e+36))) 
        if ( fnrad .eqv. .true. ) then
       call check(nf90_put_att(ncid,idnetrad,"missing_value",real(-9.96921e+36))) 
+      call check(nf90_put_att(ncid,idnetrad,"long_name","net radiation")) 
        endif
        if ( ftgrad .eqv. .true. ) then
       call check(nf90_put_att(ncid,idtotrad,"missing_value",real(-9.96921e+36))) 
+      call check(nf90_put_att(ncid,idtotrad,"std_name","Total Radiation")) 
+      call check(nf90_put_att(ncid,idtotrad,"long_name","Short and long wave radiation")) 
        endif
        if ( fsgrad .eqv. .true. ) then
       call check(nf90_put_att(ncid,idstotrad,"missing_value",real(-9.96921e+36))) 
+      call check(nf90_put_att(ncid,idstotrad,"long_name","Total solar radiation")) 
+      call check(nf90_put_att(ncid,idstotrad,"std_name","Global radiation")) 
        endif
        if ( flgrad .eqv. .true. ) then
       call check(nf90_put_att(ncid,idltotrad,"missing_value",real(-9.96921e+36))) 
+      call check(nf90_put_att(ncid,idltotrad,"long_name","long wave radiation")) 
        endif
        if ( fsh .eqv. .true. ) then
       call check(nf90_put_att(ncid,idsh,"missing_value",real(-9.96921e+36))) 
@@ -486,6 +515,9 @@ print*,'debug: sto scrivendo, apro file output'
       call check(nf90_put_att(ncid,idrh,"actual_range",                 &
      &     real((/minval(rhfarm),maxval(rhfarm)/)))) 
 
+#ifdef debug
+print*,'debug: define global attributes'
+#endif
       call date_and_time(VALUES=values)
        write(cyr,'(I4)'),values(1)
        write(cmon,'(I2)'),values(2)
@@ -505,6 +537,10 @@ print*,'debug: sto scrivendo, apro file output'
 
 
       call check(nf90_enddef(ncid))
+
+#ifdef debug
+print*,'debug: fill variables...'
+#endif
 
 !Fill in variable
       call check(nf90_put_var(ncid,idxvar,xfarm(:,1),                   &
@@ -637,6 +673,9 @@ print*,'debug: sto scrivendo, apro file output'
                       count = (/ nx, ny, nz, 1 /)   ))
       endif
 
+#ifdef debug
+print*,'debug: close file '
+#endif
       call check(nf90_close(ncid))
 !$OMP END SINGLE
 

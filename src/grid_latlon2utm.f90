@@ -8,6 +8,10 @@
       integer :: i,j
       real    :: yeast,xnorth
       
+#ifdef debug
+print*,'debug: grid_latlon2utm.f90'
+#endif
+
       
       if ( utmcoordinate .eqv. .true. ) then
 !$OMP PARALLEL         &

@@ -1,10 +1,9 @@
-
 SHELL	:= /bin/bash
 
 FC      := ifort
-FFLAGS  :=  -I/gfrai1/store_0/usr/forair/LIB_INTEL/include
+FFLAGS  :=  -I/gporq3/minni/librerie_comuni_cresco6_ifort/include
 FFLAGS  += -qopenmp -free
-LDFLAGS = -L/gfrai1/store_0/usr/forair/LIB_INTEL/lib
+LDFLAGS = -L/gporq3/minni/librerie_comuni_cresco6_ifort/lib
 
 
   FFLAGS      +=  -fpp
@@ -13,12 +12,12 @@ LDFLAGS = -L/gfrai1/store_0/usr/forair/LIB_INTEL/lib
     OPTIONS   +=  -Ddebug=$(debug)
   else
     FFLAGS      += -Ofast
-    OPTIONS   +=
+    OPTIONS   +=  
   endif
 
 
 
-LDFLAGS += -lnetcdf  -lnetcdff  -ldatetime
+LIBS += -lnetcdf -lnetcdff  -ldatetime
 
 EXEC    = wrf2farm.x
 DEPEND  = depend.mk
@@ -27,6 +26,7 @@ SRC     = $(shell ls src/*.f90)
 .SUFFIXES:
 .SUFFIXES: .f90 .f .o
 
+
 -include $(DEPEND)
 
 $(DEPEND): $(SRC)
@@ -34,4 +34,3 @@ $(DEPEND): $(SRC)
 
 clean:
 	$(RM) $(DEPEND) $(FOBJ) core *.mod src/*.mod  wrf2farm.x
-

@@ -1,0 +1,4 @@
+compila con 
+make (ottimizzato)
+make -debug=1 (con messaggi debug e flag debug in compilazione)
+

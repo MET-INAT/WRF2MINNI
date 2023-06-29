@@ -14,6 +14,12 @@
       real,allocatable   :: dummy3(:,:,:) 
       real,allocatable   :: dummy4(:,:,:) 
 
+#ifdef debug
+  print*,'debug: wrf2farm:'
+  print*,'debug: horizontal and vertical interpolation to farm grid'
+#endif
+
+
 !-------------OROGRAPHY---------------------------------------------------
 !$OMP PARALLEL DO            &
 !$OMP  COLLAPSE(2)           &
@@ -387,47 +393,48 @@
      &      allocate(dummy3(nx,ny,bottom_top+1))
          if (.not. allocated(dummy4))                                   &
      &      allocate(dummy4(nx,ny,bottom_top+1))
-       if ( use_T2 ) then
-!$OMP PARALLEL DO            &
-!$OMP  COLLAPSE(2)           &
-!$OMP DEFAULT(NONE)          &
-!$OMP SHARED(dummy2,nx,ny) &
-!$OMP PRIVATE(i,j)
-       do j=1,ny
-       do i=1,nx
-         dummy2(i,j)=0.0
-       enddo
-       enddo
-!$OMP END PARALLEL DO
-!$OMP BARRIER
-!$OMP PARALLEL DO            &
-!$OMP  COLLAPSE(3)           &
-!$OMP DEFAULT(NONE)          &
-!$OMP SHARED(dummy3,dummy4,nx,ny,bottom_top_stag) &
-!$OMP PRIVATE(i,j,k)
-       do k=1,bottom_top_stag
-       do j=1,ny
-       do i=1,nx
-         dummy3(i,j,k)=0.0
-         dummy4(i,j,k)=0.0
-       enddo
-       enddo
-       enddo
-!$OMP END PARALLEL DO
-!$OMP BARRIER
-       endif
+!if ( use_T2 ) then
+!!$OMP PARALLEL DO            &
+!!$OMP  COLLAPSE(2)           &
+!!$OMP DEFAULT(NONE)          &
+!!$OMP SHARED(dummy2,nx,ny) &
+!!$OMP PRIVATE(i,j)
+!   do j=1,ny
+!     do i=1,nx
+!       dummy2(i,j)=0.0
+!     enddo
+!   enddo
+!!$OMP END PARALLEL DO
+!!$OMP BARRIER
+!!$OMP PARALLEL DO            &
+!!$OMP  COLLAPSE(3)           &
+!!$OMP DEFAULT(NONE)          &
+!!$OMP SHARED(dummy3,dummy4,nx,ny,bottom_top_stag) &
+!!$OMP PRIVATE(i,j,k)
+!   do k=1,bottom_top_stag
+!     do j=1,ny
+!       do i=1,nx
+!         dummy3(i,j,k)=0.0
+!         dummy4(i,j,k)=0.0
+!       enddo
+!     enddo
+!   enddo
+!!$OMP END PARALLEL DO
+!!$OMP BARRIER
+!endif !if use T2, we have dummy2,3,4=0
+
 !$OMP PARALLEL DO            &
 !$OMP  COLLAPSE(3)           &
 !$OMP DEFAULT(NONE)          &
 !$OMP SHARED(dummy1,bottom_top,nx,ny) &
 !$OMP PRIVATE(i,j,k)
-       do k=1,bottom_top
-       do j=1,ny
-       do i=1,nx
-         dummy1(i,j,k)=0.0
-       enddo
-       enddo
-       enddo
+do k=1,bottom_top
+  do j=1,ny
+    do i=1,nx
+      dummy1(i,j,k)=0.0
+    enddo
+  enddo
+enddo
 !$OMP END PARALLEL DO
 !$OMP BARRIER
 !$OMP PARALLEL DO            &
@@ -435,88 +442,33 @@
 !$OMP DEFAULT(NONE)          &
 !$OMP SHARED(tfarm,nx,ny,nz) &
 !$OMP PRIVATE(i,j,k)
-       do k=1,nz
-       do j=1,ny
-       do i=1,nx
-         tfarm(i,j,k)=0.0
-       enddo
-       enddo
-       enddo
+do k=1,nz
+  do j=1,ny
+    do i=1,nx
+      tfarm(i,j,k)=0.0
+    enddo
+  enddo
+enddo
 !$OMP END PARALLEL DO
 !$OMP BARRIER
-         call interp2d_3dfields(west_east,south_north,bottom_top,       &
-     &               xwrf,ywrf,insituT,                                 &
-                     nx,ny,xfarm,yfarm,dummy1,.false.)
-!Horizontal Interpoation from wrf to minni: temperature 2 m
-       if ( use_T2 ) then
-         call interp2d_2dfields(west_east,south_north,                  &
-     &               xwrf,ywrf,T2,                                      &
-                     nx,ny,xfarm,yfarm,dummy2,.false.)
-!Compose T2m and insituT on horizontal minni grid
-!Compose wrf level height with 2m
-!$OMP PARALLEL DO            &
-!$OMP  COLLAPSE(3)           &
-!$OMP DEFAULT(NONE)          &
-!$OMP SHARED(dummy3,dummy4,dummy1,zwrf_agdint,bottom_top_stag,ny,nx) &
-!$OMP PRIVATE(i,j,k)
-       do k=2,bottom_top_stag
-       do j=1,ny
-       do i=1,nx
-         dummy3(i,j,k)=dummy1(i,j,k-1)
-         dummy4(i,j,k)=zwrf_agdint(i,j,k-1)
-       enddo
-       enddo
-       enddo
-!$OMP END PARALLEL DO
-!$OMP BARRIER
-!$OMP PARALLEL DO            &
-!$OMP  COLLAPSE(2)           &
-!$OMP DEFAULT(NONE)          &
-!$OMP SHARED(dummy3,dummy4,dummy2,nx,ny) &
-!$OMP PRIVATE(i,j)
-       do j=1,ny
-       do i=1,nx
-         dummy3(i,j,1)=dummy2(i,j)
-         dummy4(i,j,1)=2.0
-       enddo
-       enddo
-!$OMP END PARALLEL DO
-!$OMP BARRIER
+! esce dummy1 che contiene la T wrf interpolata su griglia farm
+call interp2d_3dfields(west_east,south_north,bottom_top,       &
+                       xwrf,ywrf,insituT, nx,ny,xfarm,yfarm,dummy1,.false.)
+!ho la mia dummy1 che e' la twrf interpolata su farm grid.
+! se pero' voglio usare la T2, prosegui qua sotto 
 
-!massimo
- goto 111
-!Vertical intepolaton of insitu T taking into account T2m
-         call wrf_interp_3d_z(nx,ny,bottom_top_stag,dummy3,dummy4,      &
-     &                        nz,zlev,tfarm)
-       else
-!$OMP BARRIER
-         call wrf_interp_3d_z(nx,ny,bottom_top,dummy1,zwrf_agdint, &
-     &                        nz,zlev,tfarm)
-!$OMP PARALLEL DO            &
-!$OMP  COLLAPSE(2)           &
-!$OMP DEFAULT(NONE)          &
-!$OMP SHARED(tfarm,dummy1,nx,ny) &
-!$OMP PRIVATE(i,j)
-       do j=1,ny
-       do i=1,nx
-         tfarm(i,j,1)=dummy1(i,j,1)
-       enddo
-       enddo
-!$OMP END PARALLEL DO
-!$OMP BARRIER
-       endif
-!-------------ZONAL VELOCITY---------------------------------------------------
-      if ( use_W10 ) then
+!Horizontal Interpoation from wrf to minni: temperature 2 m
+if ( use_T2 ) then
 !$OMP PARALLEL DO            &
 !$OMP  COLLAPSE(2)           &
 !$OMP DEFAULT(NONE)          &
 !$OMP SHARED(dummy2,nx,ny) &
 !$OMP PRIVATE(i,j)
-       do j=1,ny
-       do i=1,nx
-         dummy2(i,j)=0.0
-       enddo
-       enddo
+   do j=1,ny
+     do i=1,nx
+       dummy2(i,j)=0.0
+     enddo
+   enddo
 !$OMP END PARALLEL DO
 !$OMP BARRIER
 !$OMP PARALLEL DO            &
@@ -524,29 +476,118 @@
 !$OMP DEFAULT(NONE)          &
 !$OMP SHARED(dummy3,dummy4,nx,ny,bottom_top_stag) &
 !$OMP PRIVATE(i,j,k)
-       do k=1,bottom_top_stag
-       do j=1,ny
+   do k=1,bottom_top_stag
+     do j=1,ny
        do i=1,nx
          dummy3(i,j,k)=0.0
          dummy4(i,j,k)=0.0
        enddo
-       enddo
-       enddo
+     enddo
+   enddo
 !$OMP END PARALLEL DO
 !$OMP BARRIER
-       endif
+
+! dummy2 e' la T2m di wrf su griglia farm (2d)
+  call interp2d_2dfields(west_east,south_north, xwrf,ywrf,T2,           &
+                       nx,ny,xfarm,yfarm,dummy2,.false.)
+!Compose T2m and insituT on horizontal minni grid
+!Compose wrf level height with 2m
+! dummi3 diventa la t_wrf su grid farm
+! dummy4 ci metto la z sul suolo
+!$OMP PARALLEL DO            &
+!$OMP  COLLAPSE(3)           &
+!$OMP DEFAULT(NONE)          &
+!$OMP SHARED(dummy3,dummy4,dummy1,zwrf_agdint,bottom_top_stag,ny,nx) &
+!$OMP PRIVATE(i,j,k)
+  do k=2,bottom_top_stag
+    do j=1,ny
+      do i=1,nx
+        dummy3(i,j,k)=dummy1(i,j,k-1)
+        dummy4(i,j,k)=zwrf_agdint(i,j,k-1)
+      enddo
+    enddo
+  enddo
+!$OMP END PARALLEL DO
+!$OMP BARRIER
+!$OMP PARALLEL DO            &
+!$OMP  COLLAPSE(2)           &
+!$OMP DEFAULT(NONE)          &
+!$OMP SHARED(dummy3,dummy4,dummy2,nx,ny) &
+!$OMP PRIVATE(i,j)
+! al livello piu' basso, metto in t_wrf (dummy3, la t2m)
+! e la Z al livello piu' basso a 2m (dummy4)
+  do j=1,ny
+    do i=1,nx
+      dummy3(i,j,1)=dummy2(i,j)
+      dummy4(i,j,1)=2.0
+    enddo
+  enddo
+!$OMP END PARALLEL DO
+!$OMP BARRIER
+
+!massimo
+! goto 111
+!Vertical intepolaton of insitu T taking into account T2m
+  call wrf_interp_3d_z(nx,ny,bottom_top_stag,dummy3,dummy4,nz,zlev,tfarm)
+else ! if use T2
+!$OMP BARRIER
+  call wrf_interp_3d_z(nx,ny,bottom_top,dummy1,zwrf_agdint,nz,zlev,tfarm)
+!$OMP PARALLEL DO            &
+!$OMP  COLLAPSE(2)           &
+!$OMP DEFAULT(NONE)          &
+!$OMP SHARED(tfarm,dummy1,nx,ny) &
+!$OMP PRIVATE(i,j)
+  do j=1,ny
+    do i=1,nx
+      tfarm(i,j,1)=dummy1(i,j,1)
+    enddo
+  enddo
+!$OMP END PARALLEL DO
+!$OMP BARRIER
+endif ! use t2
+
+!-------------ZONAL VELOCITY---------------------------------------------------
+!if ( use_W10 ) then
+!!$OMP PARALLEL DO            &
+!!$OMP  COLLAPSE(2)           &
+!!$OMP DEFAULT(NONE)          &
+!!$OMP SHARED(dummy2,nx,ny) &
+!!$OMP PRIVATE(i,j)
+!  do j=1,ny
+!    do i=1,nx
+!      dummy2(i,j)=0.0
+!    enddo
+!  enddo
+!!$OMP END PARALLEL DO
+!!$OMP BARRIER
+!!$OMP PARALLEL DO            &
+!!$OMP  COLLAPSE(3)           &
+!!$OMP DEFAULT(NONE)          &
+!!$OMP SHARED(dummy3,dummy4,nx,ny,bottom_top_stag) &
+!!$OMP PRIVATE(i,j,k)
+!  do k=1,bottom_top_stag
+!    do j=1,ny
+!      do i=1,nx
+!        dummy3(i,j,k)=0.0
+!        dummy4(i,j,k)=0.0
+!      enddo
+!    enddo
+!  enddo
+!!$OMP END PARALLEL DO
+!!$OMP BARRIER
+!endif
 !$OMP PARALLEL DO            &
 !$OMP  COLLAPSE(3)           &
 !$OMP DEFAULT(NONE)          &
 !$OMP SHARED(dummy1,bottom_top,nx,ny) &
 !$OMP PRIVATE(i,j,k)
-       do k=1,bottom_top
-       do j=1,ny
-       do i=1,nx
-         dummy1(i,j,k)=0.0
-       enddo
-       enddo
-       enddo
+do k=1,bottom_top
+  do j=1,ny
+    do i=1,nx
+      dummy1(i,j,k)=0.0
+    enddo
+  enddo
+enddo
 !$OMP END PARALLEL DO
 !$OMP BARRIER
 !$OMP PARALLEL DO            &
@@ -554,89 +595,30 @@
 !$OMP DEFAULT(NONE)          &
 !$OMP SHARED(ufarm,nx,ny,nz) &
 !$OMP PRIVATE(i,j,k)
-       do k=1,nz
-       do j=1,ny
-       do i=1,nx
-         ufarm(i,j,k)=0.0
-       enddo
-       enddo
-       enddo
+do k=1,nz
+  do j=1,ny
+    do i=1,nx
+      ufarm(i,j,k)=0.0
+    enddo
+  enddo
+enddo
 !$OMP END PARALLEL DO
 !$OMP BARRIER
 !Horizontal Interpoation from wrf to minni: zonal velocity
-         call interp2d_3dfields(west_east,south_north,bottom_top,       &
-     &               xwrf,ywrf,uint,                                    &
-                     nx,ny,xfarm,yfarm,dummy1,.false.)
+call interp2d_3dfields(west_east,south_north,bottom_top, xwrf,ywrf,uint,      &
+                       nx,ny,xfarm,yfarm,dummy1,.false.)
 !Horizontal Interpoation from wrf to minni: zonal velocity 10 m
-      if ( use_W10 ) then
-!$OMP BARRIER
-         call interp2d_2dfields(west_east,south_north,                  &
-     &               xwrf,ywrf,U10,                                     &
-                     nx,ny,xfarm,yfarm,dummy2,.false.)
-!Compose U10 and uint on horizontal minni grid
-!Compose wrf level height with 10m
-!$OMP PARALLEL DO            &
-!$OMP  COLLAPSE(3)           &
-!$OMP DEFAULT(NONE)          &
-!$OMP SHARED(dummy3,dummy4,dummy1,zwrf_agdint,bottom_top_stag,nx,ny) &
-!$OMP PRIVATE(i,j,k)
-       do k=2,bottom_top_stag
-       do j=1,ny
-       do i=1,nx
-         dummy3(i,j,k)=dummy1(i,j,k-1)
-         dummy4(i,j,k)=zwrf_agdint(i,j,k-1)
-       enddo
-       enddo
-       enddo
-!$OMP END PARALLEL DO
-!$OMP BARRIER
-!$OMP PARALLEL DO            &
-!$OMP  COLLAPSE(2)           &
-!$OMP DEFAULT(NONE)          &
-!$OMP SHARED(dummy3,dummy4,dummy2,nx,ny) &
-!$OMP PRIVATE(i,j)
-       do j=1,ny
-       do i=1,nx
-         dummy3(i,j,1)=dummy2(i,j)
-         dummy4(i,j,1)=10.0
-       enddo
-       enddo
-!$OMP END PARALLEL DO
-!$OMP BARRIER
-!Vertical intepolaton of zonal velocity taking into account U10m
-         call wrf_interp_3d_z(nx,ny,bottom_top_stag,dummy3,dummy4,      &
-     &                        nz,zlev,ufarm)
-       else
-!$OMP BARRIER
-         call wrf_interp_3d_z(nx,ny,bottom_top,dummy1,zwrf_agdint,      &
-     &                        nz,zlev,ufarm)
-!$OMP PARALLEL DO            &
-!$OMP  COLLAPSE(2)           &
-!$OMP DEFAULT(NONE)          &
-!$OMP SHARED(ufarm,dummy1,nx,ny) &
-!$OMP PRIVATE(i,j)
-       do j=1,ny
-       do i=1,nx
-         ufarm(i,j,1)=dummy1(i,j,1)
-       enddo
-       enddo
-!$OMP END PARALLEL DO
-!$OMP BARRIER
-       endif
-!massimo
-111 continue
-!-------------MERIDIONAL VELOCITY---------------------------------------------------
-      if ( use_W10 ) then
+if ( use_W10 ) then
 !$OMP PARALLEL DO            &
 !$OMP  COLLAPSE(2)           &
 !$OMP DEFAULT(NONE)          &
 !$OMP SHARED(dummy2,nx,ny) &
 !$OMP PRIVATE(i,j)
-       do j=1,ny
-       do i=1,nx
-         dummy2(i,j)=0.0
-       enddo
-       enddo
+  do j=1,ny
+    do i=1,nx
+      dummy2(i,j)=0.0
+    enddo
+  enddo
 !$OMP END PARALLEL DO
 !$OMP BARRIER
 !$OMP PARALLEL DO            &
@@ -644,29 +626,110 @@
 !$OMP DEFAULT(NONE)          &
 !$OMP SHARED(dummy3,dummy4,nx,ny,bottom_top_stag) &
 !$OMP PRIVATE(i,j,k)
-       do k=1,bottom_top_stag
-       do j=1,ny
-       do i=1,nx
-         dummy3(i,j,k)=0.0
-         dummy4(i,j,k)=0.0
-       enddo
-       enddo
-       enddo
+  do k=1,bottom_top_stag
+    do j=1,ny
+      do i=1,nx
+        dummy3(i,j,k)=0.0
+        dummy4(i,j,k)=0.0
+      enddo
+    enddo
+  enddo
 !$OMP END PARALLEL DO
 !$OMP BARRIER
-       endif
+!$OMP BARRIER
+  call interp2d_2dfields(west_east,south_north,xwrf,ywrf,U10,              &
+                         nx,ny,xfarm,yfarm,dummy2,.false.)
+!Compose U10 and uint on horizontal minni grid
+!Compose wrf level height with 10m
+!$OMP PARALLEL DO            &
+!$OMP  COLLAPSE(3)           &
+!$OMP DEFAULT(NONE)          &
+!$OMP SHARED(dummy3,dummy4,dummy1,zwrf_agdint,bottom_top_stag,nx,ny) &
+!$OMP PRIVATE(i,j,k)
+  do k=2,bottom_top_stag
+    do j=1,ny
+      do i=1,nx
+        dummy3(i,j,k)=dummy1(i,j,k-1)
+        dummy4(i,j,k)=zwrf_agdint(i,j,k-1)
+      enddo
+    enddo
+  enddo
+!$OMP END PARALLEL DO
+!$OMP BARRIER
+!$OMP PARALLEL DO            &
+!$OMP  COLLAPSE(2)           &
+!$OMP DEFAULT(NONE)          &
+!$OMP SHARED(dummy3,dummy4,dummy2,nx,ny) &
+!$OMP PRIVATE(i,j)
+  do j=1,ny
+    do i=1,nx
+      dummy3(i,j,1)=dummy2(i,j)
+      dummy4(i,j,1)=10.0
+    enddo
+  enddo
+!$OMP END PARALLEL DO
+!$OMP BARRIER
+!Vertical intepolaton of zonal velocity taking into account U10m
+  call wrf_interp_3d_z(nx,ny,bottom_top_stag,dummy3,dummy4,nz,zlev,ufarm)
+else !use W10
+!$OMP BARRIER
+  call wrf_interp_3d_z(nx,ny,bottom_top,dummy1,zwrf_agdint,nz,zlev,ufarm)
+!$OMP PARALLEL DO            &
+!$OMP  COLLAPSE(2)           &
+!$OMP DEFAULT(NONE)          &
+!$OMP SHARED(ufarm,dummy1,nx,ny) &
+!$OMP PRIVATE(i,j)
+  do j=1,ny
+    do i=1,nx
+      ufarm(i,j,1)=dummy1(i,j,1)
+    enddo
+  enddo
+!$OMP END PARALLEL DO
+!$OMP BARRIER
+endif ! use w10
+
+!-----------MERIDIONAL VELOCITY-----------------------------------------------
+!      if ( use_W10 ) then
+!!$OMP PARALLEL DO            &
+!!$OMP  COLLAPSE(2)           &
+!!$OMP DEFAULT(NONE)          &
+!!$OMP SHARED(dummy2,nx,ny) &
+!!$OMP PRIVATE(i,j)
+!       do j=1,ny
+!       do i=1,nx
+!         dummy2(i,j)=0.0
+!       enddo
+!       enddo
+!!$OMP END PARALLEL DO
+!!$OMP BARRIER
+!!$OMP PARALLEL DO            &
+!!$OMP  COLLAPSE(3)           &
+!!$OMP DEFAULT(NONE)          &
+!!$OMP SHARED(dummy3,dummy4,nx,ny,bottom_top_stag) &
+!!$OMP PRIVATE(i,j,k)
+!       do k=1,bottom_top_stag
+!       do j=1,ny
+!       do i=1,nx
+!         dummy3(i,j,k)=0.0
+!         dummy4(i,j,k)=0.0
+!       enddo
+!       enddo
+!       enddo
+!!$OMP END PARALLEL DO
+!!$OMP BARRIER
+!       endif
 !$OMP PARALLEL DO            &
 !$OMP  COLLAPSE(3)           &
 !$OMP DEFAULT(NONE)          &
 !$OMP SHARED(dummy1,nx,ny,bottom_top) &
 !$OMP PRIVATE(i,j,k)
-       do k=1,bottom_top
-       do j=1,ny
-       do i=1,nx
-         dummy1(i,j,k)=0.0
-       enddo
-       enddo
-       enddo
+do k=1,bottom_top
+  do j=1,ny
+    do i=1,nx
+      dummy1(i,j,k)=0.0
+    enddo
+  enddo
+enddo
 !$OMP END PARALLEL DO
 !$OMP BARRIER
 !$OMP PARALLEL DO            &
@@ -675,25 +738,51 @@
 !$OMP SHARED(vfarm,nx,ny,nz) &
 !$OMP PRIVATE(i,j,k)
 !massimo debug
-       do k=1,nz
-       do j=1,ny
-       do i=1,nx
-         vfarm(i,j,k)=0.0
-       enddo
-       enddo
-       enddo
+do k=1,nz
+  do j=1,ny
+    do i=1,nx
+      vfarm(i,j,k)=0.0
+    enddo
+  enddo
+enddo
 !$OMP END PARALLEL DO
 !$OMP BARRIER
 !Horizontal Interpoation from wrf to minni: meridional velocity
-         call interp2d_3dfields(west_east,south_north,bottom_top,       &
-     &               xwrf,ywrf,vint,                                    &
-                     nx,ny,xfarm,yfarm,dummy1,.false.)
-      if ( use_W10 ) then
+call interp2d_3dfields(west_east,south_north,bottom_top,xwrf,ywrf,vint,       &
+                       nx,ny,xfarm,yfarm,dummy1,.false.)
+
+if ( use_W10 ) then
+!$OMP PARALLEL DO            &
+!$OMP  COLLAPSE(2)           &
+!$OMP DEFAULT(NONE)          &
+!$OMP SHARED(dummy2,nx,ny) &
+!$OMP PRIVATE(i,j)
+  do j=1,ny
+    do i=1,nx
+      dummy2(i,j)=0.0
+    enddo
+  enddo
+!$OMP END PARALLEL DO
+!$OMP BARRIER
+!$OMP PARALLEL DO            &
+!$OMP  COLLAPSE(3)           &
+!$OMP DEFAULT(NONE)          &
+!$OMP SHARED(dummy3,dummy4,nx,ny,bottom_top_stag) &
+!$OMP PRIVATE(i,j,k)
+  do k=1,bottom_top_stag
+    do j=1,ny
+      do i=1,nx
+        dummy3(i,j,k)=0.0
+        dummy4(i,j,k)=0.0
+      enddo
+    enddo
+  enddo
+!$OMP END PARALLEL DO
+!$OMP BARRIER
 !$OMP BARRIER
 !Horizontal Interpoation from wrf to minni: meridional velocity 10 m
-         call interp2d_2dfields(west_east,south_north,                  &
-     &               xwrf,ywrf,V10,                                     &
-                     nx,ny,xfarm,yfarm,dummy2,.false.)
+  call interp2d_2dfields(west_east,south_north,xwrf,ywrf,V10,                 &
+                        nx,ny,xfarm,yfarm,dummy2,.false.)
 !Compose V10 and vint on horizontal minni grid
 !Compose wrf level height with 10m
 !$OMP PARALLEL DO            &
@@ -701,14 +790,14 @@
 !$OMP DEFAULT(NONE)          &
 !$OMP SHARED(dummy3,dummy4,dummy1,zwrf_agdint,bottom_top_stag,nx,ny) &
 !$OMP PRIVATE(i,j,k)
-       do k=2,bottom_top_stag
-       do j=1,ny
-       do i=1,nx
-         dummy3(i,j,k)=dummy1(i,j,k-1)
-         dummy4(i,j,k)=zwrf_agdint(i,j,k-1)
-       enddo
-       enddo
-       enddo
+  do k=2,bottom_top_stag
+    do j=1,ny
+      do i=1,nx
+        dummy3(i,j,k)=dummy1(i,j,k-1)
+        dummy4(i,j,k)=zwrf_agdint(i,j,k-1)
+      enddo
+    enddo
+  enddo
 !$OMP END PARALLEL DO
 !$OMP BARRIER
 !$OMP PARALLEL DO            &
@@ -716,60 +805,47 @@
 !$OMP DEFAULT(NONE)          &
 !$OMP SHARED(dummy3,dummy4,dummy2,nx,ny) &
 !$OMP PRIVATE(i,j)
-       do j=1,ny
-       do i=1,nx
-         dummy3(i,j,1)=dummy2(i,j)
-         dummy4(i,j,1)=10.0
-       enddo
-       enddo
+  do j=1,ny
+    do i=1,nx
+      dummy3(i,j,1)=dummy2(i,j)
+      dummy4(i,j,1)=10.0
+    enddo
+  enddo
 !$OMP END PARALLEL DO
 !$OMP BARRIER
 !Vertical intepolaton of meridional velocity taking into account  V10m
-         call wrf_interp_3d_z(nx,ny,bottom_top_stag,dummy3,dummy4,      &
-     &                        nz,zlev,vfarm)
-!massimo devub
-!print*,'utilizzato per vinterp bottom_top_stag ',bottom_top_stag
-!do k=1,nz
-!write(*,fmt='(a6,3x,f9.2,3x,i2)')'vfarm ',vfarm(77,142,k),k
-!enddo
-       else
+  call wrf_interp_3d_z(nx,ny,bottom_top_stag,dummy3,dummy4,nz,zlev,vfarm)
+else
 !$OMP BARRIER
-         call wrf_interp_3d_z(nx,ny,bottom_top,dummy1,zwrf_agdint,      &
-     &                        nz,zlev,vfarm)
+  call wrf_interp_3d_z(nx,ny,bottom_top,dummy1,zwrf_agdint,nz,zlev,vfarm)
 !$OMP PARALLEL DO            &
 !$OMP  COLLAPSE(2)           &
 !$OMP DEFAULT(NONE)          &
 !$OMP SHARED(vfarm,dummy1,nx,ny) &
 !$OMP PRIVATE(i,j)
-       do j=1,ny
-       do i=1,nx
-         vfarm(i,j,1)=dummy1(i,j,1)
-       enddo
-       enddo
+  do j=1,ny
+    do i=1,nx
+      vfarm(i,j,1)=dummy1(i,j,1)
+    enddo
+  enddo
 !$OMP END PARALLEL DO
 !$OMP BARRIER
+endif ! use w10
 
-!massimo devub
-!print*,'utilizzato per vinterp bottom_top ',bottom_top
-!do k=1,nz
-!write(*,fmt='(a6,3x,f9.2,3x,i2)')'vfarm ',vfarm(77,142,k),k
-!enddo
-       endif
-!stop
-return
+
 !-------------RELATIVE HUMIDITY---------------------------------------------------
 !$OMP PARALLEL DO            &
 !$OMP  COLLAPSE(3)           &
 !$OMP DEFAULT(NONE)          &
 !$OMP SHARED(dummy1,nx,ny,bottom_top) &
 !$OMP PRIVATE(i,j,k)
-       do k=1,bottom_top
-       do j=1,ny
-       do i=1,nx
-         dummy1(i,j,k)=0.0
-       enddo
-       enddo
-       enddo
+do k=1,bottom_top
+  do j=1,ny
+    do i=1,nx
+      dummy1(i,j,k)=0.0
+    enddo
+  enddo
+enddo
 !$OMP END PARALLEL DO
 !$OMP BARRIER
 !$OMP PARALLEL DO            &
@@ -777,50 +853,49 @@ return
 !$OMP DEFAULT(NONE)          &
 !$OMP SHARED(rhfarm,nx,ny,nz) &
 !$OMP PRIVATE(i,j,k)
-       do k=1,nz
-       do j=1,ny
-       do i=1,nx
-         rhfarm(i,j,k)=0.0
-       enddo
-       enddo
-       enddo
+do k=1,nz
+  do j=1,ny
+    do i=1,nx
+      rhfarm(i,j,k)=0.0
+    enddo
+  enddo
+enddo
 !$OMP END PARALLEL DO
 !$OMP BARRIER
 !Horizontal Interpoation from wrf to minni: relative humidity
-         call interp2d_3dfields(west_east,south_north,bottom_top,       &
-     &               xwrf,ywrf,rh,                                      &
-     &               nx,ny,xfarm,yfarm,dummy1,.false.)
-         call wrf_interp_3d_z(nx,ny,bottom_top,dummy1,zwrf_agdint,      &
-     &                        nz,zlev,rhfarm)
+call interp2d_3dfields(west_east,south_north,bottom_top,xwrf,ywrf,rh,      &
+                       nx,ny,xfarm,yfarm,dummy1,.false.)
+call wrf_interp_3d_z(nx,ny,bottom_top,dummy1,zwrf_agdint,nz,zlev,rhfarm)
 !$OMP PARALLEL DO            &
 !$OMP  COLLAPSE(2)           &
 !$OMP DEFAULT(NONE)          &
 !$OMP SHARED(rhfarm,dummy1,nx,ny) &
 !$OMP PRIVATE(i,j)
-       do j=1,ny
-       do i=1,nx
-         rhfarm(i,j,1)=dummy1(i,j,1)
-       enddo
-       enddo
+do j=1,ny
+  do i=1,nx
+    rhfarm(i,j,1)=dummy1(i,j,1)
+  enddo
+enddo
 !$OMP END PARALLEL DO
 !$OMP BARRIER
+
 !---------------------------------------------------------------------------
 !-------------HYDROMETEOR---------------------------------------------------
 !---------------------------------------------------------------------------
-      if ( fhymet .eqv. .true. ) then
+if ( fhymet .eqv. .true. ) then
 !-------------QCLOUD--------------------------------------------------------
 !$OMP PARALLEL DO            &
 !$OMP  COLLAPSE(3)           &
 !$OMP DEFAULT(NONE)          &
 !$OMP SHARED(dummy1,nx,ny,bottom_top) &
 !$OMP PRIVATE(i,j,k)
-       do k=1,bottom_top
-       do j=1,ny
-       do i=1,nx
-         dummy1(i,j,k)=0.0
-       enddo
-       enddo
-       enddo
+  do k=1,bottom_top
+    do j=1,ny
+      do i=1,nx
+        dummy1(i,j,k)=0.0
+      enddo
+    enddo
+  enddo
 !$OMP END PARALLEL DO
 !$OMP BARRIER
 !$OMP PARALLEL DO            &
@@ -828,31 +903,29 @@ return
 !$OMP DEFAULT(NONE)          &
 !$OMP SHARED(qcloudfarm,nx,ny,nz) &
 !$OMP PRIVATE(i,j,k)
-       do k=1,nz
-       do j=1,ny
-       do i=1,nx
-         qcloudfarm(i,j,k)=0.0
-       enddo
-       enddo
-       enddo
+  do k=1,nz
+    do j=1,ny
+      do i=1,nx
+        qcloudfarm(i,j,k)=0.0
+      enddo
+    enddo
+  enddo
 !$OMP END PARALLEL DO
 !$OMP BARRIER
 !Horizontal Interpoation from wrf to minni: Cloud water mixing ratio
-         call interp2d_3dfields(west_east,south_north,bottom_top,       &
-     &               xwrf,ywrf,qcloud,                                  &
-     &               nx,ny,xfarm,yfarm,dummy1,.false.)
-         call wrf_interp_3d_z(nx,ny,bottom_top,dummy1,zwrf_agdint,      &
-     &                        nz,zlev,qcloudfarm)
+  call interp2d_3dfields(west_east,south_north,bottom_top,xwrf,ywrf,qcloud,   &
+                         nx,ny,xfarm,yfarm,dummy1,.false.)
+  call wrf_interp_3d_z(nx,ny,bottom_top,dummy1,zwrf_agdint,nz,zlev,qcloudfarm)
 !$OMP PARALLEL DO            &
 !$OMP  COLLAPSE(2)           &
 !$OMP DEFAULT(NONE)          &
 !$OMP SHARED(qcloudfarm,dummy1,nx,ny) &
 !$OMP PRIVATE(i,j)
-       do j=1,ny
-       do i=1,nx
-         qcloudfarm(i,j,1)=dummy1(i,j,1)
-       enddo
-       enddo
+  do j=1,ny
+    do i=1,nx
+      qcloudfarm(i,j,1)=dummy1(i,j,1)
+    enddo
+  enddo
 !$OMP END PARALLEL DO
 !$OMP BARRIER
 !-------------QICE--------------------------------------------------------
@@ -861,13 +934,13 @@ return
 !$OMP DEFAULT(NONE)          &
 !$OMP SHARED(dummy1,nx,ny,bottom_top) &
 !$OMP PRIVATE(i,j,k)
-       do k=1,bottom_top
-       do j=1,ny
-       do i=1,nx
-         dummy1(i,j,k)=0.0
-       enddo
-       enddo
-       enddo
+  do k=1,bottom_top
+    do j=1,ny
+      do i=1,nx
+        dummy1(i,j,k)=0.0
+      enddo
+    enddo
+  enddo
 !$OMP END PARALLEL DO
 !$OMP BARRIER
 !$OMP PARALLEL DO            &
@@ -875,31 +948,29 @@ return
 !$OMP DEFAULT(NONE)          &
 !$OMP SHARED(qicefarm,nx,ny,nz) &
 !$OMP PRIVATE(i,j,k)
-       do k=1,nz
-       do j=1,ny
-       do i=1,nx
-         qicefarm(i,j,k)=0.0
-       enddo
-       enddo
-       enddo
+  do k=1,nz
+    do j=1,ny
+      do i=1,nx
+        qicefarm(i,j,k)=0.0
+      enddo
+    enddo
+  enddo
 !$OMP END PARALLEL DO
 !$OMP BARRIER
 !Horizontal Interpoation from wrf to minni: Ice mixing ratio
-         call interp2d_3dfields(west_east,south_north,bottom_top,       &
-     &               xwrf,ywrf,qice,                                    &
-     &               nx,ny,xfarm,yfarm,dummy1,.false.)
-         call wrf_interp_3d_z(nx,ny,bottom_top,dummy1,zwrf_agdint,      &
-     &                        nz,zlev,qicefarm)
+  call interp2d_3dfields(west_east,south_north,bottom_top,xwrf,ywrf,qice,      &
+                        nx,ny,xfarm,yfarm,dummy1,.false.)
+  call wrf_interp_3d_z(nx,ny,bottom_top,dummy1,zwrf_agdint,nz,zlev,qicefarm)
 !$OMP PARALLEL DO            &
 !$OMP  COLLAPSE(2)           &
 !$OMP DEFAULT(NONE)          &
 !$OMP SHARED(qicefarm,dummy1,nx,ny) &
 !$OMP PRIVATE(i,j)
-       do j=1,ny
-       do i=1,nx
-         qicefarm(i,j,1)=dummy1(i,j,1)
-       enddo
-       enddo
+  do j=1,ny
+    do i=1,nx
+      qicefarm(i,j,1)=dummy1(i,j,1)
+    enddo
+  enddo
 !$OMP END PARALLEL DO
 !$OMP BARRIER
 !-------------QRAIN--------------------------------------------------------
@@ -908,13 +979,13 @@ return
 !$OMP DEFAULT(NONE)          &
 !$OMP SHARED(dummy1,nx,ny,bottom_top) &
 !$OMP PRIVATE(i,j,k)
-       do k=1,bottom_top
-       do j=1,ny
-       do i=1,nx
-         dummy1(i,j,k)=0.0
-       enddo
-       enddo
-       enddo
+  do k=1,bottom_top
+    do j=1,ny
+      do i=1,nx
+        dummy1(i,j,k)=0.0
+      enddo
+    enddo
+  enddo
 !$OMP END PARALLEL DO
 !$OMP BARRIER
 !$OMP PARALLEL DO            &
@@ -922,31 +993,29 @@ return
 !$OMP DEFAULT(NONE)          &
 !$OMP SHARED(qrainfarm,nx,ny,nz) &
 !$OMP PRIVATE(i,j,k)
-       do k=1,nz
-       do j=1,ny
-       do i=1,nx
-         qrainfarm(i,j,k)=0.0
-       enddo
-       enddo
-       enddo
+  do k=1,nz
+    do j=1,ny
+      do i=1,nx
+        qrainfarm(i,j,k)=0.0
+      enddo
+    enddo
+  enddo
 !$OMP END PARALLEL DO
 !$OMP BARRIER
 !Horizontal Interpoation from wrf to minni: Rain water mixing ratio
-         call interp2d_3dfields(west_east,south_north,bottom_top,       &
-     &               xwrf,ywrf,qrain,                                   &
+  call interp2d_3dfields(west_east,south_north,bottom_top,xwrf,ywrf,qrain,    &
      &               nx,ny,xfarm,yfarm,dummy1,.false.)
-         call wrf_interp_3d_z(nx,ny,bottom_top,dummy1,zwrf_agdint,      &
-     &                        nz,zlev,qrainfarm)
+  call wrf_interp_3d_z(nx,ny,bottom_top,dummy1,zwrf_agdint,nz,zlev,qrainfarm)
 !$OMP PARALLEL DO            &
 !$OMP  COLLAPSE(2)           &
 !$OMP DEFAULT(NONE)          &
 !$OMP SHARED(qrainfarm,dummy1,nx,ny) &
 !$OMP PRIVATE(i,j)
-       do j=1,ny
-       do i=1,nx
-         qrainfarm(i,j,1)=dummy1(i,j,1)
-       enddo
-       enddo
+  do j=1,ny
+  do i=1,nx
+    qrainfarm(i,j,1)=dummy1(i,j,1)
+  enddo
+  enddo
 !$OMP END PARALLEL DO
 !$OMP BARRIER
 !-------------QSNOW--------------------------------------------------------
@@ -955,13 +1024,13 @@ return
 !$OMP DEFAULT(NONE)          &
 !$OMP SHARED(dummy1,nx,ny,bottom_top) &
 !$OMP PRIVATE(i,j,k)
-       do k=1,bottom_top
-       do j=1,ny
-       do i=1,nx
-         dummy1(i,j,k)=0.0
-       enddo
-       enddo
-       enddo
+  do k=1,bottom_top
+  do j=1,ny
+  do i=1,nx
+    dummy1(i,j,k)=0.0
+  enddo
+  enddo
+  enddo
 !$OMP END PARALLEL DO
 !$OMP BARRIER
 !$OMP PARALLEL DO            &
@@ -969,13 +1038,13 @@ return
 !$OMP DEFAULT(NONE)          &
 !$OMP SHARED(qsnowfarm,nx,ny,nz) &
 !$OMP PRIVATE(i,j,k)
-       do k=1,nz
-       do j=1,ny
-       do i=1,nx
-         qsnowfarm(i,j,k)=0.0
-       enddo
-       enddo
-       enddo
+  do k=1,nz
+  do j=1,ny
+  do i=1,nx
+    qsnowfarm(i,j,k)=0.0
+  enddo
+  enddo
+  enddo
 !$OMP END PARALLEL DO
 !$OMP BARRIER
 !Horizontal Interpoation from wrf to minni: Snow water mixing ratio
