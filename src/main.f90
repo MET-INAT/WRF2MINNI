@@ -245,24 +245,25 @@ call check(nf90_close(ncid))
 idummy=(numtimestep-1)*dt_step
 select case (trim(time_units))
   case ('days')
-    current_date=file_start_date 
     deltat_increment=timedelta(days=dt_step)
+    deltat_since_file_start=timedelta(days=(start_timestep-1)*dt_step)
     dt_dummy=timedelta(days=idummy)
   case ('hours')
-    current_date=file_start_date
     deltat_increment=timedelta(hours=dt_step)
+    deltat_since_file_start=timedelta(hours=(start_timestep-1)*dt_step)
     dt_dummy=timedelta(hours=idummy)
   case ('minutes')
-    current_date=file_start_date 
     deltat_increment=timedelta(minutes=dt_step)
+    deltat_since_file_start=timedelta(minutes=(start_timestep-1)*dt_step)
     dt_dummy=timedelta(minutes=idummy)
   case ('seconds')
-    current_date=file_start_date 
     deltat_increment=timedelta(seconds=dt_step)
+    deltat_since_file_start=timedelta(seconds=(start_timestep-1)*dt_step)
 end select
 
 dayxfile=dt_dummy%total_seconds()/86400
 nhour=deltat_increment%total_seconds()/3600
+current_date=file_start_date + deltat_since_file_start
 print*,' '
 print*,'NUMBER OF DAYS IN FILE INPUT: ',dayxfile
 print*,'Time increment ',nhour,' hours'

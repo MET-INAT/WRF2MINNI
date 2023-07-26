@@ -3,7 +3,7 @@ use datetime_module! , only : timedelta, datetime
 IMPLICIT NONE
 SAVE
 type (datetime) :: simulation_start_date,file_start_date,current_date
-type (timedelta) :: deltat_increment
+type (timedelta) :: deltat_increment, deltat_since_file_start
 
 integer, parameter :: max_num_levs=100
 integer :: dayxfile
