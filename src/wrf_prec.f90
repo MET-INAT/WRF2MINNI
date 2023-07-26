@@ -23,35 +23,34 @@ integer :: i,j
 #endif
 
 
-if (if_bucket .eqv. .true.)then
+if (if_bucket .eqv. .false.)then
 
 !$OMP PARALLEL DO            &
 !$OMP  COLLAPSE(2)           &
 !$OMP DEFAULT(NONE)          &
 !$OMP SHARED(totprec,RAINC,RAINNC,RAINSH,south_north,west_east) &
 !$OMP PRIVATE(i,j)
-do j=1,south_north
-  do i=1,west_east
-    totprec(i,j) = RAINC(i,j)+RAINNC(i,j)+RAINSH(i,j)
+  do j=1,south_north
+    do i=1,west_east
+      totprec(i,j) = RAINC(i,j)+RAINNC(i,j)+RAINSH(i,j)
+    enddo
   enddo
-enddo
 !$OMP END PARALLEL DO
 !$OMP BARRIER
 
 else
-
 !$OMP PARALLEL DO            &
 !$OMP  COLLAPSE(2)           &
 !$OMP DEFAULT(NONE)          &
 !$OMP SHARED(totprec,RAINC,RAINNC,RAINSH,bucket_threshold_mm,i_rainnc,i_rainc,south_north,west_east) &
 !$OMP PRIVATE(i,j)
-do j=1,south_north
-  do i=1,west_east
-    rainnc(i,j)=rainnc(i,j)+bucket_threshold_mm*i_rainnc(i,j)
-    rainc(i,j)=rainc(i,j)+bucket_threshold_mm*i_rainc(i,j)
-    totprec(i,j) = RAINC(i,j)+RAINNC(i,j)+RAINSH(i,j)
+  do j=1,south_north
+    do i=1,west_east
+      rainnc(i,j)=rainnc(i,j)+bucket_threshold_mm*i_rainnc(i,j)
+      rainc(i,j)=rainc(i,j)+bucket_threshold_mm*i_rainc(i,j)
+      totprec(i,j) = RAINC(i,j)+RAINNC(i,j)+RAINSH(i,j)
+    enddo
   enddo
-enddo
 !$OMP END PARALLEL DO
 !$OMP BARRIER
 endif

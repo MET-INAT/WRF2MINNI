@@ -1,4 +1,4 @@
-       subroutine wr_farm(fileout)
+       subroutine wr_farm(output_filename)
  
        use general
        use param_minni
@@ -29,7 +29,7 @@
        character*2 :: cmin
        character*2 :: csec
        character*3 :: cmillisec
-       character(len=*) ::  fileout
+       character(len=*) ::  output_filename
 
 !----------------------------------------------------------------------
 !$OMP SINGLE
@@ -54,7 +54,7 @@
 print*,'debug: farmtime ',farmtime
 #endif
 
-      call check(nf90_create(trim(fileout),nf90_clobber, ncid))
+      call check(nf90_create(trim(output_filename),nf90_clobber, ncid))
 !Define dimensions
 #ifdef debug
 print*,'debug: define dimensions '

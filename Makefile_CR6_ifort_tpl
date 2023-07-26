@@ -1,9 +1,9 @@
 SHELL	:= /bin/bash
 
 FC      := ifort
-FFLAGS  :=  -I/gporq3/minni/librerie_comuni_cresco6_ifort/include
+FFLAGS  :=  -I@@pathlib@@/include
 FFLAGS  += -qopenmp -free
-LDFLAGS = -L/gporq3/minni/librerie_comuni_cresco6_ifort/lib
+LDFLAGS = -L@@pathlib@@/lib
 
 
   FFLAGS      +=  -fpp
@@ -17,7 +17,7 @@ LDFLAGS = -L/gporq3/minni/librerie_comuni_cresco6_ifort/lib
 
 
 
-LIBS += -lnetcdf -lnetcdff  -ldatetime
+LIBS += -lnetcdf -lnetcdff
 
 EXEC    = wrf2farm.x
 DEPEND  = depend.mk

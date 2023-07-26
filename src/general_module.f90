@@ -7,7 +7,7 @@ type (timedelta) :: deltat_increment
 
 integer, parameter :: max_num_levs=100
 integer :: dayxfile
-character(len=256) :: dirin ,dirout,filein,fileou
+character(len=256) :: dirin ,dirout,filein,out_prefix
 character(len=256) :: time_units ! read from wrf output
 real   :: nhour 
 logical :: rotate,fsstsk,fnrad ,fsgrad,flgrad,ftgrad,fhymet,fznt
@@ -22,7 +22,7 @@ real, dimension(max_num_levs) :: zlev=-999
 
 
 
-namelist/general_namelist/filein,fileou,dirin,dirout,   & 
+namelist/general_namelist/filein,out_prefix,dirin,dirout,   & 
 start_timestep, rotate, fsstsk,fnrad ,fsgrad,     &
 flgrad,ftgrad,falbedo,fsh,flh,fgh, fustar,flstar,fpbl,  &
 fhymet,fznt,use_T2,use_W10

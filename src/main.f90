@@ -201,10 +201,15 @@ print*,'debug: get BUCKET Threshold '
 #endif
 status = nf90_inquire_attribute(ncid, nf90_global, "BUCKET_MM")
 if (status == 0)then
-  if_bucket=.true. !this allows read of I_RAINC and I_RAINNC
   call check(nf90_get_att(ncid, NF90_GLOBAL, 'BUCKET_MM', bucket_threshold_mm))
-  allocate( I_RAINC(west_east,south_north), I_RAINNC(west_east,south_north))
-  print*,'BUCKET_THRESHOLD present (mm): ',bucket_threshold_mm
+  if ( bucket_threshold_mm >=  0 )then 
+    if_bucket=.true. !this allows read of I_RAINC and I_RAINNC
+    allocate( I_RAINC(west_east,south_north), I_RAINNC(west_east,south_north))
+    print*,'BUCKET_THRESHOLD present (mm): ',bucket_threshold_mm
+  else
+    if_bucket=.false.
+    print*,'BUCKET_THRESHOLD not present in wrfout'
+  endif
 endif
 
 ! get file start date
@@ -283,7 +288,7 @@ do timestep=start_timestep,numtimestep
   write(current_dd,'(I2.2)'),day
   write(current_hh,'(I2.2)'),hour
   current_yyyymmdd=current_yyyy//current_mm//current_dd//current_hh
-  output_filename=trim(dirout)//"/"//trim(fileou)//"_"//trim(current_yyyymmdd)//".nc"
+  output_filename=trim(dirout)//"/"//trim(out_prefix)//"_"//trim(current_yyyymmdd)//".nc"
 
   call read_wrf(timestep)
 !$OMP END SINGLE
