@@ -51,6 +51,7 @@
       hours_since=datetime_farm-nc_ref_time 
       farmtime=hours_since%total_seconds()/3600.
 #ifdef debug
+print*,yr,mon,day,hr
 print*,'debug: farmtime ',farmtime
 #endif
 

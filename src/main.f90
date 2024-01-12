@@ -206,9 +206,11 @@ if (status == 0)then
     if_bucket=.true. !this allows read of I_RAINC and I_RAINNC
     allocate( I_RAINC(west_east,south_north), I_RAINNC(west_east,south_north))
     print*,'BUCKET_THRESHOLD present (mm): ',bucket_threshold_mm
+    print*,'____________________________________________________'
   else
     if_bucket=.false.
     print*,'BUCKET_THRESHOLD not present in wrfout'
+    print*,'____________________________________________________'
   endif
 endif
 
@@ -271,11 +273,14 @@ print*,'FILE START DATE DATE: ',file_start_date%isoformat()
 print*,'SIMULATION START DATE DATE: ',simulation_start_date%isoformat()
 print*,'Start timestep ',start_timestep
 print*,'End timestep   ',numtimestep
+print*,'------------------------------------------------------------'
 !$OMP END SINGLE
+
 do timestep=start_timestep,numtimestep
 !read wrf data
 !$OMP SINGLE
   print*,' '
+  print*,'------------------------------------------------------------'
   print*,'Start timestep ',start_timestep
   print*,'End timestep   ',numtimestep
   print*,'Current timestep ',timestep
@@ -362,7 +367,6 @@ do timestep=start_timestep,numtimestep
 
   ! scrive in output un file per ogni istante letto
   print*,'writing to output file ',trim(output_filename)
-  print*,'---------------------------------------------------------------------'
   call wr_farm(output_filename)
 !$OMP END SINGLE
 

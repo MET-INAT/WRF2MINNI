@@ -93,7 +93,7 @@
              timetoload = timestep-1
          endif
       print*,'COMPUTING precflux, from file ',trim(dirin)//trim(filetoread)
-      print*,'timestep ',timetoload
+      print*,'timestep for precflux: ',timetoload
          call check(nf90_inq_varid(ncid,'RAINC',idRAINC))
          call check(nf90_get_var(ncid,idRAINC,dummy_rainc,                   &
               start = (/ 1, 1, timetoload /),                           &
