@@ -12,6 +12,7 @@ integer      :: fnum,nfile,timestep,numtimestep
 integer      :: year, month, day, hour, dt_step
 integer      :: idummy,status
 character    :: cdummy
+integer :: narg
 character(len=256) :: filenl, time_units_dummy, csim_start, cfile_start
 character(len=500) :: output_filename
 character(len=4)   :: current_yyyy
@@ -22,7 +23,18 @@ type(timedelta) :: dt_dummy
 
 
 !$OMP SINGLE
+
+narg = command_argument_count()
+
+if (narg < 1) then
+  print *, "Uso: (fornire una namelist in argomento)"
+  print *, "   wrf2farm.x namelist"
+  stop 1
+end if
+
+
 CALL GETARG(1,filenl)
+print *, "File namelist:", trim(filenl)
 !lettura namelits
 open(99,file=filenl)
 read(99,general_namelist)
@@ -53,6 +65,9 @@ allocate(xfarm(nx,ny),yfarm(nx,ny), &
         totradfarm(nx,ny), &
         totlradfarm(nx,ny), &
         totsradfarm(nx,ny), &
+        swddirfarm(nx,ny), &
+        swddiffarm(nx,ny), &
+        swddnifarm(nx,ny), &
         shfarm(nx,ny), &
         lhfarm(nx,ny), &
         ghfarm(nx,ny), &
@@ -145,6 +160,9 @@ allocate(XTIME(numtimestep),               &
          LH(west_east,south_north),   &
          GRDFLX(west_east,south_north),   &
          SWDOWN(west_east,south_north),   &
+         SWDDIR(west_east,south_north),   &
+         SWDDIF(west_east,south_north),   &
+         SWDDNI(west_east,south_north),   &
          GLW(west_east,south_north),   &
          PBLH(west_east,south_north),   &
          PSFC(west_east,south_north),   &
