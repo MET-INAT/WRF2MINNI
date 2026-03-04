@@ -393,6 +393,48 @@ print*,'debug: swdown '
      count = (/ west_east, south_north, 1 /) ))
 endif
 
+if ( ( ftgrad .eqv. .true. ) .or. ( fsgrad .eqv. .true. ) ) then
+#ifdef debug
+print*,'debug: swdown '
+#endif
+  call check(nf90_inq_varid(ncid,'SWDOWN',idswdown))
+  call check(nf90_get_var(ncid,idswdown,SWDOWN,                     &
+     start = (/ 1, 1, timestep /),                                &
+     count = (/ west_east, south_north, 1 /) ))
+endif
+
+
+if ( fswddir .eqv. .true. ) then
+#ifdef debug
+print*,'debug: swddir '
+#endif
+  call check(nf90_inq_varid(ncid,'SWDDIR',idswdown))
+  call check(nf90_get_var(ncid,idswdown,SWDDIR,                     &
+     start = (/ 1, 1, timestep /),                                &
+     count = (/ west_east, south_north, 1 /) ))
+endif
+
+
+if ( fswddif .eqv. .true. ) then
+#ifdef debug
+print*,'debug: swddif '
+#endif
+  call check(nf90_inq_varid(ncid,'SWDDIF',idswdown))
+  call check(nf90_get_var(ncid,idswdown,SWDDIF,                     &
+     start = (/ 1, 1, timestep /),                                &
+     count = (/ west_east, south_north, 1 /) ))
+endif
+
+if ( fswddni .eqv. .true. ) then
+#ifdef debug
+print*,'debug: swddni '
+#endif
+  call check(nf90_inq_varid(ncid,'SWDDNI',idswdown))
+  call check(nf90_get_var(ncid,idswdown,SWDDNI,                     &
+     start = (/ 1, 1, timestep /),                                &
+     count = (/ west_east, south_north, 1 /) ))
+endif
+
 if ( fustar .eqv. .true. )  then
 #ifdef debug
 print*,'debug: ust '

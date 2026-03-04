@@ -17,6 +17,7 @@
        integer :: idsstsk,idsnow
        integer :: idu,idv,idt,idrh
        integer :: idpbl,idnetrad,idtotrad,idstotrad,idltotrad
+       integer :: idswddir, idswddif, idswddni
        integer :: idqcloud,idqice,idqrain,idqsnow,idqgraup
        integer :: idsh,idlh,idgh,idz0
        integer :: idalbedo,idustar,idlstar
@@ -118,9 +119,25 @@ print*,'debug: define vars '
       call check(nf90_def_var(ncid,"TRAD",nf90_float,                  &
      &  (/ idx, idy, idtime /),idtotrad))
        endif
+
+       if ( fswddir .eqv. .true. ) then
+      call check(nf90_def_var(ncid,"SWDDIR",nf90_float,                 &
+     &  (/ idx, idy, idtime /),idswddir))
+       endif
+       if ( fswddif .eqv. .true. ) then
+      call check(nf90_def_var(ncid,"SWDDIF",nf90_float,                 &
+     &  (/ idx, idy, idtime /),idswddif))
+       endif
+       if ( fswddni .eqv. .true. ) then
+      call check(nf90_def_var(ncid,"SWDDNI",nf90_float,                 &
+     &  (/ idx, idy, idtime /),idswddni))
+       endif
+
        if ( fsgrad .eqv. .true. ) then
+!!!! ATTENZIONE!!!!!!
 ! TOTRAD è definito swdown in wrf2farm_int.f90
-! ed e' quello che sembra si aspetti surfpro come TOTRAD (non al somma sw+lw)
+! e non quello in wrf_totrad.f90
+! ed e' quello che sembra si aspetti surfpro come TOTRAD (non la somma sw+lw)
 ! almeno il pytohn di sandro lo definisce "Total SOLAR radiazion" quindi SW
       call check(nf90_def_var(ncid,"TOTRAD",nf90_float,                 &
      &  (/ idx, idy, idtime /),idstotrad))
@@ -196,6 +213,20 @@ print*,'debug: define var atrributes '
        if ( ftgrad .eqv. .true. ) then
       call check(nf90_put_att(ncid,idtotrad,"units","W/m2")) 
        endif
+
+
+       if ( fswddir .eqv. .true. ) then
+         call check(nf90_put_att(ncid,idswddir,"units","W/m2")) 
+       endif
+       if ( fswddif .eqv. .true. ) then
+         call check(nf90_put_att(ncid,idswddif,"units","W/m2")) 
+       endif
+       if ( fswddni .eqv. .true. ) then
+         call check(nf90_put_att(ncid,idswddni,"units","W/m2")) 
+       endif
+
+
+
        if ( fsgrad .eqv. .true. ) then
       call check(nf90_put_att(ncid,idstotrad,"units","W/m2")) 
        endif
@@ -270,6 +301,26 @@ print*,'debug: define var atrributes '
       call check(nf90_put_att(ncid,idtotrad,"std_name","Total Radiation")) 
       call check(nf90_put_att(ncid,idtotrad,"long_name","Short and long wave radiation")) 
        endif
+
+      if ( fswddir .eqv. .true. ) then
+        call check(nf90_put_att(ncid,idswddir,"missing_value",real(-9.96921e+36))) 
+        call check(nf90_put_att(ncid,idswddir,"std_name","Direct Radiation")) 
+        call check(nf90_put_att(ncid,idswddir,"long_name","Shortwave surface downward direct irradiance")) 
+       endif
+
+      if ( fswddif .eqv. .true. ) then
+        call check(nf90_put_att(ncid,idswddif,"missing_value",real(-9.96921e+36))) 
+        call check(nf90_put_att(ncid,idswddif,"std_name","Diffuse Radiation")) 
+        call check(nf90_put_att(ncid,idswddif,"long_name","Shortwave surface downward diffuse irradiance")) 
+       endif
+
+      if ( fswddni .eqv. .true. ) then
+        call check(nf90_put_att(ncid,idswddni,"missing_value",real(-9.96921e+36))) 
+        call check(nf90_put_att(ncid,idswddni,"std_name","Normal Radiation")) 
+        call check(nf90_put_att(ncid,idswddni,"long_name","Shortwave surface downward direct normal irradiance")) 
+       endif
+
+
        if ( fsgrad .eqv. .true. ) then
       call check(nf90_put_att(ncid,idstotrad,"missing_value",real(-9.96921e+36))) 
       call check(nf90_put_att(ncid,idstotrad,"long_name","Total solar radiation")) 
@@ -332,6 +383,17 @@ print*,'debug: define var atrributes '
        if ( ftgrad .eqv. .true. ) then
       call check(nf90_put_att(ncid,idtotrad,"add_offset",real(0))) 
        endif
+
+       if ( fswddir .eqv. .true. ) then
+         call check(nf90_put_att(ncid,idswddir,"add_offset",real(0))) 
+       endif
+       if ( fswddif .eqv. .true. ) then
+         call check(nf90_put_att(ncid,idswddif,"add_offset",real(0))) 
+       endif
+       if ( fswddni .eqv. .true. ) then
+         call check(nf90_put_att(ncid,idswddni,"add_offset",real(0))) 
+       endif
+
        if ( fsgrad .eqv. .true. ) then
       call check(nf90_put_att(ncid,idstotrad,"add_offset",real(0))) 
        endif
@@ -391,6 +453,18 @@ print*,'debug: define var atrributes '
        if ( ftgrad .eqv. .true. ) then
       call check(nf90_put_att(ncid,idtotrad,"scale_factor",real(1))) 
        endif
+
+
+       if ( fswddir .eqv. .true. ) then
+         call check(nf90_put_att(ncid,idswddir,"scale_factor",real(1))) 
+       endif
+       if ( fswddif .eqv. .true. ) then
+         call check(nf90_put_att(ncid,idswddif,"scale_factor",real(1))) 
+       endif
+       if ( fswddni .eqv. .true. ) then
+         call check(nf90_put_att(ncid,idswddni,"scale_factor",real(1))) 
+       endif
+
        if ( fsgrad .eqv. .true. ) then
       call check(nf90_put_att(ncid,idstotrad,"scale_factor",real(1))) 
        endif
@@ -459,6 +533,23 @@ print*,'debug: define var atrributes '
       call check(nf90_put_att(ncid,idtotrad,"actual_range",             &
      &     real((/minval(totradfarm),maxval(totradfarm)/)))) 
        endif
+
+
+       if ( fswddir .eqv. .true. ) then
+         call check(nf90_put_att(ncid,idswddir,"actual_range",             &
+     &    real((/minval(swddirfarm),maxval(swddirfarm)/)))) 
+       endif
+       if ( fswddif .eqv. .true. ) then
+         call check(nf90_put_att(ncid,idswddif,"actual_range",             &
+     &    real((/minval(swddiffarm),maxval(swddiffarm)/)))) 
+       endif
+       if ( fswddni .eqv. .true. ) then
+         call check(nf90_put_att(ncid,idswddni,"actual_range",             &
+     &    real((/minval(swddnifarm),maxval(swddnifarm)/)))) 
+       endif
+
+
+
        if ( fsgrad .eqv. .true. ) then
       call check(nf90_put_att(ncid,idstotrad,"actual_range",            &
      &     real((/minval(totsradfarm),maxval(totsradfarm)/)))) 
@@ -596,6 +687,26 @@ print*,'debug: fill variables...'
      &                start = (/ 1, 1, 1 /),                     &
                       count = (/ nx, ny, 1 /)   ))
        endif
+
+
+       if ( fswddir .eqv. .true. ) then
+         call check(nf90_put_var(ncid,idswddir,swddirfarm,      &
+                     start = (/ 1, 1, 1 /),                     &
+                     count = (/ nx, ny, 1 /)   ))
+       endif
+
+       if ( fswddif .eqv. .true. ) then
+          call check(nf90_put_var(ncid,idswddif,swddiffarm,     &
+                     start = (/ 1, 1, 1 /),                     &
+                     count = (/ nx, ny, 1 /)   ))
+       endif
+
+       if ( fswddni .eqv. .true. ) then
+          call check(nf90_put_var(ncid,idswddni,swddnifarm,     &
+                     start = (/ 1, 1, 1 /),                     &
+                     count = (/ nx, ny, 1 /)   ))
+       endif
+
        if ( fsgrad .eqv. .true. ) then
       call check(nf90_put_var(ncid,idstotrad,totsradfarm,               &
      &                start = (/ 1, 1, 1 /),                     &

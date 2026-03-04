@@ -17,6 +17,10 @@
        real, allocatable, dimension(:,:)   :: totradfarm
        real, allocatable, dimension(:,:)   :: totlradfarm
        real, allocatable, dimension(:,:)   :: totsradfarm
+       real, allocatable, dimension(:,:)   :: swddirfarm
+       real, allocatable, dimension(:,:)   :: swddiffarm
+       real, allocatable, dimension(:,:)   :: swddnifarm
+
        real, allocatable, dimension(:,:)   :: shfarm
        real, allocatable, dimension(:,:)   :: lhfarm
        real, allocatable, dimension(:,:)   :: ghfarm

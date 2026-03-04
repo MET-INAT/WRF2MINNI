@@ -1,4 +1,4 @@
-compila con 
+compila con  compila_cr8
 make (ottimizzato)
 make -debug=1 (con messaggi debug e flag debug in compilazione)
 

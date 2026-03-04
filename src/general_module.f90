@@ -12,6 +12,7 @@ character(len=256) :: time_units ! read from wrf output
 real   :: nhour 
 logical :: rotate,fsstsk,fnrad ,fsgrad,flgrad,ftgrad,fhymet,fznt
 logical :: falbedo,fsh,flh,fgh,fustar,flstar,fpbl,use_T2,use_W10 
+logical :: fswddir,fswddif,fswddni
 
 logical :: utmcoordinate
 logical :: flag_interp=.true.
@@ -24,7 +25,8 @@ real, dimension(max_num_levs) :: zlev=-999
 
 namelist/general_namelist/filein,out_prefix,dirin,dirout,   & 
 start_timestep, rotate, fsstsk,fnrad ,fsgrad,     &
-flgrad,ftgrad,falbedo,fsh,flh,fgh, fustar,flstar,fpbl,  &
+flgrad,ftgrad,fswddir, fswddif, fswddni, &
+falbedo,fsh,flh,fgh, fustar,flstar,fpbl,  &
 fhymet,fznt,use_T2,use_W10
 
 namelist/output_namelist/utmcoordinate,xstart,ystart,nx,ny,nz,dx,dy,zlev

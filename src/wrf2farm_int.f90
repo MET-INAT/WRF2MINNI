@@ -276,6 +276,66 @@
      &               xwrf,ywrf,SWDOWN,                                  &
                      nx,ny,xfarm,yfarm,totsradfarm,.false.)
        endif
+
+!-------swddir----------------------------------------------
+       if ( fswddir .eqv. .true. ) then
+!$OMP PARALLEL DO            &
+!$OMP  COLLAPSE(2)           &
+!$OMP DEFAULT(NONE)          &
+!$OMP SHARED(swddirfarm,nx,ny) &
+!$OMP PRIVATE(i,j)
+       do j=1,ny
+       do i=1,nx
+         swddirfarm(i,j)=0.0
+       enddo
+       enddo
+!$OMP END PARALLEL DO
+!$OMP BARRIER
+         call interp2d_2dfields(west_east,south_north,                  &
+     &               xwrf,ywrf,SWDDIR,                                  &
+                     nx,ny,xfarm,yfarm,swddirfarm,.false.)
+       endif
+
+!-------swddif----------------------------------------------
+       if ( fswddif .eqv. .true. ) then
+!$OMP PARALLEL DO            &
+!$OMP  COLLAPSE(2)           &
+!$OMP DEFAULT(NONE)          &
+!$OMP SHARED(swddiffarm,nx,ny) &
+!$OMP PRIVATE(i,j)
+       do j=1,ny
+       do i=1,nx
+         swddiffarm(i,j)=0.0
+       enddo
+       enddo
+!$OMP END PARALLEL DO
+!$OMP BARRIER
+         call interp2d_2dfields(west_east,south_north,                  &
+     &               xwrf,ywrf,SWDDIF,                                  &
+                     nx,ny,xfarm,yfarm,swddiffarm,.false.)
+       endif
+
+!-------swddni----------------------------------------------
+       if ( fswddni .eqv. .true. ) then
+!$OMP PARALLEL DO            &
+!$OMP  COLLAPSE(2)           &
+!$OMP DEFAULT(NONE)          &
+!$OMP SHARED(swddnifarm,nx,ny) &
+!$OMP PRIVATE(i,j)
+       do j=1,ny
+       do i=1,nx
+         swddnifarm(i,j)=0.0
+       enddo
+       enddo
+!$OMP END PARALLEL DO
+!$OMP BARRIER
+         call interp2d_2dfields(west_east,south_north,                  &
+     &               xwrf,ywrf,SWDDNI,                                  &
+                     nx,ny,xfarm,yfarm,swddnifarm,.false.)
+       endif
+
+
+
 !------------TOTAL LONGWAVE HEAT FLUX----------------------------------------------
        if ( flgrad .eqv. .true. ) then
 !$OMP PARALLEL DO            &

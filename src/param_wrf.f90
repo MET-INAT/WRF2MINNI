@@ -52,6 +52,9 @@
       real, allocatable,dimension(:,:) :: LH
       real, allocatable,dimension(:,:) :: GRDFLX
       real, allocatable,dimension(:,:) :: SWDOWN
+      real, allocatable,dimension(:,:) :: SWDDIR
+      real, allocatable,dimension(:,:) :: SWDDIF
+      real, allocatable,dimension(:,:) :: SWDDNI
       real, allocatable,dimension(:,:) :: GLW
       real, allocatable,dimension(:,:) :: SNOWH
       real, allocatable,dimension(:,:) :: ZNT
