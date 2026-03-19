@@ -1,0 +1,7 @@
+module load forair_portici
+
+pathlib=/lpor1/store_0/usr/forair/FORAIR/OPERATIONAL/software/libraries/LIB_INTEL_ONEAPI
+cat Makefile_CR8_ifort_tpl | sed "s!@@pathlib@@!$pathlib!g" > Makefile
+
+make 
+#make debug=1

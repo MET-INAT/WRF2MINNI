@@ -1,0 +1,37 @@
+SHELL	:= /bin/bash
+
+FC      := ifort
+FFLAGS  :=  -I@@pathlib@@/include
+FFLAGS  += -qopenmp -free
+LDFLAGS = -L@@pathlib@@/lib
+LDFLAGS += -L@@pathlib@@/lib64
+
+
+  FFLAGS      +=  -fpp
+  ifdef debug
+    FFLAGS    +=  -debug full #-check all
+    OPTIONS   +=  -Ddebug=$(debug)
+  else
+    FFLAGS      += -Ofast
+    OPTIONS   +=  
+  endif
+
+
+
+LIBS += -lnetcdf -lnetcdff
+
+EXEC    = wrf2farm.x
+DEPEND  = depend.mk
+SRC     = $(shell ls src/*.f90)
+
+.SUFFIXES:
+.SUFFIXES: .f90 .f .o
+
+
+-include $(DEPEND)
+
+$(DEPEND): $(SRC)
+	makedepf90 -o $(EXEC) -r '$(FC) $(OPTIONS) -c -o $$@ $(FFLAGS) $$<' $^ > $(DEPEND)
+
+clean:
+	$(RM) $(DEPEND) $(FOBJ) core *.mod src/*.mod  wrf2farm.x
