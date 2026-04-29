@@ -30,8 +30,8 @@ SRC     = $(shell ls src/*.f90)
 
 -include $(DEPEND)
 
-$(DEPEND): $(SRC)
-	makedepf90 -o $(EXEC) -r '$(FC) $(OPTIONS) -c -o $$@ $(FFLAGS) $$<' $^ > $(DEPEND)
+$(DEPEND): $(SRC) Makefile
+	makedepf90 -o $(EXEC) -r '$(FC) $(OPTIONS) -c -o $$@ $(FFLAGS) $$<' $(SRC) > $(DEPEND)
 
 clean:
 	$(RM) $(DEPEND) $(FOBJ) core *.mod src/*.mod  wrf2farm.x
