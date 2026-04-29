@@ -149,6 +149,7 @@ allocate(XTIME(numtimestep),               &
          SST(west_east,south_north),   &
          SSTSK(west_east,south_north),   &
          TSK(west_east,south_north),   &
+         LANDMASK(west_east,south_north),   &
          EMISS(west_east,south_north),   &
          HGT(west_east,south_north),   &
          COSALPHA(west_east,south_north),   &
@@ -232,8 +233,6 @@ if (status == 0)then
   endif
 endif
 
-! get file start date
-call check(nf90_get_att(ncid, NF90_GLOBAL, 'START_DATE', cfile_start))
 ! get start simulation date
 call check(nf90_get_att(ncid, NF90_GLOBAL, 'SIMULATION_START_DATE', csim_start))
 
@@ -245,12 +244,17 @@ read(csim_start(9:10),'(I2)'),day
 read(csim_start(12:13),'(I2)'),hour
 simulation_start_date=datetime(year, month, day, hour)
 
-! set actual file start date
-read(cfile_start(1:4),'(I4)'),year
-read(cfile_start(6:7),'(I2)'),month
-read(cfile_start(9:10),'(I2)'),day
-read(cfile_start(12:13),'(I2)'),hour
-file_start_date=datetime(year, month, day, hour)
+! set actual file start date da XTIME(1): robusto anche con restart
+select case (trim(time_units))
+  case ('days')
+    file_start_date = simulation_start_date + timedelta(days=int(XTIME(1)))
+  case ('hours')
+    file_start_date = simulation_start_date + timedelta(hours=int(XTIME(1)))
+  case ('minutes')
+    file_start_date = simulation_start_date + timedelta(minutes=int(XTIME(1)))
+  case ('seconds')
+    file_start_date = simulation_start_date + timedelta(seconds=int(XTIME(1)))
+end select
 
 
 !close netcdf

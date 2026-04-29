@@ -17,7 +17,7 @@ integer :: idRAINNC,idRAINC,idRAINSH
 integer :: idGRAUPELNC,idHAILNC,idSNOWNC
 integer :: idSST,idSNOWH,idZNT
 integer :: idSSTSK
-integer :: idTSK, idEMISS
+integer :: idTSK, idEMISS, idLANDMASK
 integer :: idalbedo,idust
 integer :: idgrdflx,idhfx,idlh,idswdown,idglw
 integer :: idHGT,idT2,idU10,idV10,idPSFC,idPBLH
@@ -355,15 +355,23 @@ print*,'debug: lh '
      count = (/ west_east, south_north, 1 /) ))
 endif
 
+#ifdef debug
+print*,'debug: tsk '
+#endif
+call check(nf90_inq_varid(ncid,'TSK',idTSK))
+call check(nf90_get_var(ncid,idTSK,TSK,                           &
+   start = (/ 1, 1, timestep /),                                  &
+   count = (/ west_east, south_north, 1 /) ))
+
+#ifdef debug
+print*,'debug: landmask '
+#endif
+call check(nf90_inq_varid(ncid,'LANDMASK',idLANDMASK))
+call check(nf90_get_var(ncid,idLANDMASK,LANDMASK,                 &
+   start = (/ 1, 1, timestep /),                                  &
+   count = (/ west_east, south_north, 1 /) ))
+
 if ( fnrad .eqv. .true. ) then
-!#ifdef debug
-! print*,'debug: tsk '
-!#endif
-! uso la T2 per calcolare nrad e non tsk
-! call check(nf90_inq_varid(ncid,'TSK',idTSK))
-! call check(nf90_get_var(ncid,idTSK,TSK,                       &
-!    start = (/ 1, 1, timestep /),                                &
-!    count = (/ west_east, south_north, 1 /) ))
 #ifdef debug
   print*,'debug: emiss '
 #endif

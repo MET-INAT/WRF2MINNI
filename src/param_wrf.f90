@@ -41,6 +41,7 @@
       real, allocatable,dimension(:,:) :: SST
       real, allocatable,dimension(:,:) :: SSTSK
       real, allocatable,dimension(:,:) :: TSK
+      real, allocatable,dimension(:,:) :: LANDMASK
       real, allocatable,dimension(:,:) :: EMISS
       real, allocatable,dimension(:,:) :: HGT
       real, allocatable,dimension(:,:) :: COSALPHA

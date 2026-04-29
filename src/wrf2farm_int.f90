@@ -37,6 +37,23 @@
      &               xwrf,ywrf,HGT,                                     &
                      nx,ny,xfarm,yfarm,hgtfarm,.false.)
 !-------------Sea Surface Temperature-------------------------------------
+! Pre-trattamento: sui punti terra (LANDMASK=1) e sui punti acqua anomali
+! (LANDMASK=0 ma SST=0, es. domini annidati), sostituisce SST con TSK.
+! TSK e' definita su tutti i punti e coincide con SST sui punti mare.
+!$OMP PARALLEL DO            &
+!$OMP  COLLAPSE(2)           &
+!$OMP DEFAULT(NONE)          &
+!$OMP SHARED(SST,TSK,LANDMASK,west_east,south_north) &
+!$OMP PRIVATE(i,j)
+       do j=1,south_north
+       do i=1,west_east
+         if ( (LANDMASK(i,j) .eq. 1.0) .or. (SST(i,j) .eq. 0.0) ) then
+           SST(i,j) = TSK(i,j)
+         endif
+       enddo
+       enddo
+!$OMP END PARALLEL DO
+!$OMP BARRIER
 !$OMP PARALLEL DO            &
 !$OMP  COLLAPSE(2)           &
 !$OMP DEFAULT(NONE)          &
@@ -86,6 +103,20 @@
 !$OMP BARRIER
 !-------------Skin Sea Surface Temperature----------------------------------
        if ( fsstsk .eqv. .true. ) then
+!$OMP PARALLEL DO            &
+!$OMP  COLLAPSE(2)           &
+!$OMP DEFAULT(NONE)          &
+!$OMP SHARED(SSTSK,TSK,LANDMASK,west_east,south_north) &
+!$OMP PRIVATE(i,j)
+       do j=1,south_north
+       do i=1,west_east
+         if ( (LANDMASK(i,j) .eq. 1.0) .or. (SSTSK(i,j) .eq. 0.0) ) then
+           SSTSK(i,j) = TSK(i,j)
+         endif
+       enddo
+       enddo
+!$OMP END PARALLEL DO
+!$OMP BARRIER
 !$OMP PARALLEL DO            &
 !$OMP  COLLAPSE(2)           &
 !$OMP DEFAULT(NONE)          &
